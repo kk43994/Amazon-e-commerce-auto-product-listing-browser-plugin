@@ -1,0 +1,100 @@
+# Python缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+venv/
+env/
+ENV/
+.venv
+
+# IDE和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 测试和覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# 日志文件
+logs/
+*.log
+
+# 数据文件（敏感信息）
+data/output/*
+!data/output/.gitkeep
+*.xlsx
+*.xls
+!data/input/products_template.xlsx
+!data/input/variation_template.xlsx
+!data/input/test_products.xlsx
+
+# 配置文件（可能包含敏感信息）
+config.yaml
+safety_config.json
+# 保留模板
+!config/config.yaml.template
+!config/safety_config.json.template
+
+# 紫鸟浏览器相关
+drivers/
+*.exe
+!ziniao.exe.template
+
+# Chrome扩展临时文件
+chrome_extension/test_*.csv
+chrome_extension/.DS_Store
+
+# 打包文件（太大）
+*.zip
+!amazon-upload-assistant-v3.0.1.zip
+
+# 临时文件
+*.tmp
+*.temp
+nul
+test_extension*/
+my_extension/
+
+# 截图和图片（如果很多）
+screenshots/
+*.png
+!chrome_extension/icons/*.png
+
+# 操作系统
+Thumbs.db
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 分发/打包
+build/
+dist/
+*.egg-info/
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# Node模块（如果有）
+node_modules/
+
+# 备份文件
+*.bak
+*.backup

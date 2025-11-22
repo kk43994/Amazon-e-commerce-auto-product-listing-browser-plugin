@@ -1,0 +1,113 @@
+# 紫鸟RPA配置文件模板
+# 复制此文件为 config.yaml 并填写您的实际配置
+
+# ==================== 紫鸟浏览器配置 ====================
+ziniao:
+  # 紫鸟浏览器安装路径
+  client_path: "D:\\ziniao\\ziniao.exe"  # Windows示例
+  # client_path: "/Applications/SuperBrowser.app/Contents/MacOS/SuperBrowser"  # Mac示例
+
+  # HTTP通信端口 (默认8848,如有冲突可修改)
+  port: 8848
+
+# ==================== 账号信息 ====================
+# 重要: 请妥善保管,不要上传到公开仓库!
+account:
+  # 公司名称/账号组
+  company: "your_company_name"
+
+  # 用户名
+  username: "your_username"
+
+  # 登录密码
+  password: "your_password"
+
+  # 安全密码 (如需要)
+  security_password: "your_security_password"
+
+# ==================== ChromeDriver配置 ====================
+chromedriver:
+  # ChromeDriver路径
+  # 留空则使用系统PATH中的chromedriver
+  path: "drivers/chromedriver137.exe"
+
+  # 等待超时设置(秒)
+  implicit_wait: 10
+  page_load_timeout: 30
+
+# ==================== Excel数据文件 ====================
+data:
+  # 输入文件路径
+  input_excel: "data/input/test_products.xlsx"
+
+  # 工作表名称(留空则使用第一个工作表)
+  sheet_name: ""
+
+  # 必需的列名
+  required_columns:
+    - title      # 商品标题
+    - brand      # 品牌
+    - price      # 价格
+    - sku        # SKU编号
+
+# ==================== 上传配置 ====================
+upload:
+  # 每个商品上传后的等待时间(秒)
+  wait_between_products: 3
+
+  # 批量上传时的批次大小
+  batch_size: 10
+
+  # 失败重试次数
+  max_retries: 3
+
+  # 重试延迟(秒)
+  retry_delay: 5
+
+  # 上传失败后是否继续
+  continue_on_error: true
+
+  # 是否在上传前截图
+  screenshot_before: false
+
+  # 是否在上传后截图
+  screenshot_after: true
+
+  # 截图保存目录
+  screenshot_dir: "logs/screenshots"
+
+# ==================== 安全设置 ====================
+safety:
+  # 使用安全配置文件
+  use_safety_config: true
+
+  # 安全配置文件路径
+  safety_config_path: "config/safety_config.json"
+
+# ==================== 日志配置 ====================
+logging:
+  # 日志级别: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+
+  # 日志文件路径
+  file: "logs/ziniao_rpa.log"
+
+  # 是否同时输出到控制台
+  console: true
+
+  # 日志文件最大大小(MB)
+  max_file_size: 10
+
+  # 保留的日志文件数量
+  backup_count: 5
+
+# ==================== 其他设置 ====================
+settings:
+  # 元素等待超时时间(秒)
+  element_wait_timeout: 30
+
+  # 页面加载超时时间(秒)
+  page_load_timeout: 60
+
+  # 是否启用调试模式
+  debug_mode: false

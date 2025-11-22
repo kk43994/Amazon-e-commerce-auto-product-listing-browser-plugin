@@ -1,0 +1,763 @@
+1、使用此功能可以达到的目标
+通过此方案，在启动紫鸟之后，紫鸟会返回webdriver的端口号，然后您即可按照webdriver标准来控制浏览器。最终让您达到：通过自动化代码来控制紫鸟浏览器。
+
+2、快速开始您的webdriver之旅
+2.1、申请开通webdriver调用的权限
+首次使用webdriver的时候，请确认是否已开通webdriver权限。详见：如何开通webdriver权限
+
+如有疑问联系微信：微信扫描下方二维码添加生态管家，请备注“紫鸟webdriver”
+
+
+
+2.2、通过Selenium API 启动和控制紫鸟浏览器内核
+仅紫鸟windows客户端5.X.X.X 版本、6.16.0.126及以上版本、紫鸟mac客户端6.15.0.44及以上版本支持
+
+在使用webdriver启动之前，请先关闭紫鸟浏览器的主进程
+
+2.2.1、python
+2.2.1.1 主要功能说明
+（1）基础示例文件：ziniao_webdriver_http_py3.py 该文件提供了基础的店铺访问示例代码，适合初学者参考学习。
+
+（2）我们还提供开源的基于紫鸟浏览器的电商平台WebDriver自动化示例代码：GitHub - ziniao-open/ziniao_webdriver_demo，开发者可按自己需求场景定制开发，示例内容包括：
+
+Demo 1: 电商订单自动拉取（热门推荐）
+Demo 2: 销售与流量业务报表下载
+Demo 3: 电商平台用户评价导出
+2.2.1.2 使用说明
+请使用 PyCharm 或其他 Python 开发环境打开以上基于 Python3 的示例文件。 替换驱动程序路径、客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+2.2.2、java
+用IDEA或其他编辑器打开我们提供的代码示例
+
+webdriver-java-demo.zip
+
+2.2.3、CSharp.net
+用VSCode或其他编辑器打开我们提供的代码示例
+
+（windows）webdriver-C#.net-demo.zip
+
+替换驱动程序路径、客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+2.3、通过PuppeteerAPI 启动和控制紫鸟浏览器内核
+用VSCode或者其他编辑器打开我们提供的代码示例
+
+puppeteer_js_demo.zip
+
+替换客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+2.4、通过Playwright API 启动和控制紫鸟浏览器内核
+这种方式会被检测到是自动化，需自行处理特征问题，建议使用selenium
+
+2.4.1、python
+用PyCharm或其他编辑器打开我们提供的代码示例（基于Python3）
+
+ziniao_playwright_http_py3.py
+
+替换客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+2.4.2、java
+用IDEA或其他编辑器打开我们提供的代码示例
+
+playwright-java-demo.zip
+
+替换客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+2.4.3、js
+用VSCode或者其他编辑器打开我们提供的代码示例
+
+playwright_js_demo.zip
+
+替换客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+2.5、通过DrissionPage API 启动和控制紫鸟浏览器内核
+用PyCharm或其他编辑器打开我们提供的代码示例（基于Python3）
+
+ziniao_drissionpage_http_py3.py
+
+替换客户端执行程序路径、socket端口号、用户登录信息user_info后运行即可。
+
+3、启动客户端参数说明
+Python命令行
+
+is_windows = platform.system() == 'Windows'
+is_mac = platform.system() == 'Darwin'
+def start_browser():
+    """
+    启动客户端
+    :return:
+    """
+    try:
+        if is_windows:
+            cmd = [client_path, '--run_type=web_driver', '--ipc_type=http', '--port=' + str(socket_port)]
+        elif is_mac:
+            cmd = ['open', '-a', client_path, '--args', '--run_type=web_driver', '--ipc_type=http',
+                   '--port=' + str(socket_port)]
+        else:
+            exit()
+        subprocess.Popen(cmd)
+        time.sleep(5)
+    except Exception:
+        print('start browser process failed')
+        return
+JS命令行
+
+const childProcess = require('child_process');
+const execFile = util.promisify(childProcess.execFile);
+
+const is_windows = os.platform() === 'win32';
+const is_mac = os.platform() === 'darwin';
+
+async function startBrowser() {
+    try {
+        if (is_windows) {
+            const cmd = [clientPath, '--run_type=web_driver', '--ipc_type=http', `--port=${socketPort}`];
+            execFile(cmd[0], cmd.slice(1));
+        } else if (is_mac) {
+            const cmd = ['open', '-a', clientPath, '--args', '--run_type=web_driver', '--ipc_type=http',
+                `--port=${socketPort}`];
+            execFile(cmd[0], cmd.slice(1));
+        } else {
+            process.exit();
+        }
+        await new Promise(resolve => setTimeout(resolve, 5000));
+    } catch (error) {
+        console.log(`start browser process failed: ${error}`);
+        process.exit();
+    }
+}
+3.1、--run_type=web_driver （必须）
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+指定以Webdriver 模式运行主进程
+
+3.2、--ipc_type=http（必须）
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+约定通信方式： http
+
+请注意设置TimeOut时长，建议设置120秒以上
+
+3.3、--port=端口号（必须）
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+告诉紫鸟浏览器双方通讯端口是什么，紫鸟浏览器会以该端口在本机启动一个服务端
+
+3.4、--port_exception=1886,1567（可选）
+支持的客户端版本：windows 紫鸟V5
+
+店铺内允许连接到本地的端口号，可以设置多个端口
+
+3.5、--multip（可选）
+支持的客户端版本：windows 紫鸟V5
+
+自动化建议配置，去除部分可能干扰自动化的功能。
+
+多个紫鸟帐号建议与 --enforce-cache-path 一起使用
+
+3.6、--enforce-cache-path=缓存路径 （可选）
+支持的客户端版本：windows 紫鸟V
+
+用于指定独立的缓存目录，与 –multip 一起使用。
+
+允许多个帐号同时在一台pc中运行，避免多个实例的缓存相互冲突。
+
+此模式下，需要自行调整--port参数，避免多个实例间的冲突问题。
+
+3.7、--listen_ip=要监听的本机ip
+支持的客户端版本：windows 紫鸟V5
+
+设置紫鸟和紫鸟店铺连接的监听地址，非 127.0.0.1的情况下，将允许在其它电脑上控制紫鸟，修改后需要一起更改 driver连接和紫鸟主程序的连接地址 默认值：127.0.0.1
+
+3.8、--dns=dns服务器
+支持的客户端版本：windows 紫鸟V5
+
+设置紫鸟网络请求使用的dns，默认使用本机dns。如果有网络请求异常，可以尝试设置一个适合的dns。例如 --dns=223.5.5.5
+
+4、注意事项
+4.1、通讯注意事项
+（1）请求内容和返回结果都是通过JSON结构组织，收发消息统一以UTF-8编码。
+
+（2）http模式下，务必将超时时长设置为120s或者以上。减少启动店铺因默认的60s超时导致的失败
+
+4.2、其他注意事项
+（1）需要根据运行设备的配置，适当控制同时启动的店铺浏览器窗口总个数，店铺刚刚启动时非常消耗CPU可以考虑错开启动。这个部分需要开发者自行调优，没有明确的标准。
+
+5、接口说明
+5.1、Action : applyAuth
+说明：申请设备授权
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "company": "公司",
+
+  "username": "用户名",
+
+  "password": "密码",
+
+  "action": "applyAuth",
+
+  "requestId": "全局唯一标识"
+
+}
+响应结果：
+
+
+{
+
+    "statusCode": "状态码",
+
+    "err": "异常信息",
+
+    "action": "applyAuth",
+
+    "requestId": "全局唯一标识"
+
+}
+状态码：
+
+（1） 0 : 成功
+
+（2）-10000 : 未知异常
+
+（3）-10002 : Socket参数非法
+
+（4）-10003 : 申请流程异常
+
+（5）-10004 : 申请失败
+
+5.2、Action : getBrowserList
+说明：获取店铺列表（主要用来获取 "browserOauth": "店铺ID"）
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "company": "公司",
+
+  "username": "用户名",
+
+  "password": "密码",
+
+  "action": "getBrowserList",
+
+  "requestId": "全局唯一标识"
+
+}
+响应结果：
+
+
+{
+
+  "statusCode": "状态码",
+
+  "err": "异常信息",
+
+  "action": "getBrowserList",
+
+  "requestId": "全局唯一标识",
+
+  "browserList": [{
+
+    "browserOauth": "店铺ID",
+
+    "browserName": "店铺名称",
+
+    "browserIp": "店铺IP",
+
+    "siteId": "店铺所属站点",
+
+    "isExpired": false, //ip是否过期
+
+    "platform_id": "平台id", 
+
+    "platform_name": "平台名称"
+  }]
+
+}
+getBrowserList中的SiteId说明
+
+详见：SiteId说明
+
+状态码：
+
+（1） 0 : 成功
+
+（2）-10000 : 未知异常
+
+（3）-10002 : Socket参数非法
+
+（4）-10003 : 登录失败（需要开通webdriver权限，需要关闭登陆验证）
+
+（5）-10013 : 需要设备认证
+
+（6）-10004 : 获取店铺列表时服务器返回异常
+
+5.3、Action : startBrowser
+说明：启动店铺，关闭店铺需要调用stopBrowser，连续两次调用startBrowser会视为重启
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "company": "公司",
+
+  "username": "用户名",
+
+  "password": "密码",
+
+  "action": "startBrowser",
+
+  "browserOauth": "店铺ID 加密",
+
+  "browserId": "店铺ID 未加密",//优先取browserId，获取方式见 6.2、获取紫鸟店铺ID
+
+  "isHeadless": true, //是否启用无头模式，开启无头后需要自己检测网络
+
+  "isWaitPluginUpdate": true, //是否等待插件热更新完成 （仅支持windows 紫鸟V5）
+
+  "privacyMode":true,//隐私模式
+
+  "requestId": "全局唯一标识",
+
+  "runMode": "运行模式，默认值2，1 轻量模式2 均衡模式 3 极速模式", //  （仅支持windows 紫鸟V5）
+
+  "pluginIdList":"id1,id2,id3", //店铺启动后加载的生态中心插件
+
+  "pluginIdType":0, // 指定pluginIdList的数据类型，0插件版本id，1插件id
+
+  "proxyTagFiter":"name1,name2,name3",//优先级降低的代理模式  （仅支持windows 紫鸟V5）
+
+  "cookieTypeLoad":0, // 固定传入0
+
+  "cookieTypeSave":0, // 0 默认1 不提交
+
+  "injectJsInfo":"{\"url\":\"http://www.baidu.com\",\"username\":\"用户名\"}",
+
+  "notPromptForDownload":1, //1 不弹，0：弹  下载文件的时候是否弹窗提示选择文件保存路径
+
+  "isLoadUserPlugin":true, //true：使用店铺已安装的插件；false ：使用pluginIdList携带的插件；
+
+  "windowRatio":100, // 打开的浏览器窗口尺寸 值范围：0-100，0不控制 100 全屏
+
+  "forceDownloadPath":"文件下载路径", // 选填，需要绝对路径
+
+  "preSetting":"{\"profile.managed_default_content_settings.images\": 2}" // 选填，是一个json格式的字符串，设置浏览器的配置，目前支持 profile.managed_default_content_settings.images 无图模式
+
+}
+响应结果：
+
+
+{
+
+  "statusCode": "状态码",
+
+  "err": "异常信息",
+
+  "action": "startBrowser",
+
+  "browserOauth": "店铺ID",
+
+  "requestId": "全局唯一标识",
+
+  "LastError": "内部发生的错误信息",
+
+  "ip":"代理IP",
+
+  "isDynamicIp":"是否动态IP",
+
+  "browserPath":"允许的下载路径",
+
+  "launcherPage": "店铺所属平台的默认启动页面",
+
+  "ipDetectionPage": "ip检测页地址",
+
+  "debuggingPort": "调试端口",
+
+  "reportPluginId": "报表插件id",
+
+  "duplicate": "副本标志",
+
+  "proxyTag": "当前启动的代理标志",
+
+  "proxyType": 5, //代理ip类型 -1：错误数据 0:站群 1:云平台 2:自有IP 5:本地ip
+
+  "mainHandle": "打开窗口的句柄",
+
+  "core_version": "内核版本",
+
+  "core_type": "内核",
+
+  "coreVersion": "内核版本",
+
+  "coreType": "内核",
+
+  "downloadPath": "文件下载路径"
+
+}
+启动Selenium 必要参数
+
+
+//根据startBrowser返回结果启动Selenium
+
+ChromeOptions options = new ChromeOptions();
+
+//调试端口
+
+options.setExperimentalOption("debuggerAddress", "127.0.0.1:" + debuggingPort);
+
+//删除其他不需要参数
+注：使用Selenium连接时，需要根据core_type及core_version判断内核及内核版本来选取对应版本的webdriver驱动。如"core_type":"Chromium", core_version": "119.1.0.16"，则要用119版本的chromedriver连接。
+
+状态码：
+
+（1） 0 : 成功
+
+（2）-10000 : 未知异常
+
+（3）-10001 : 内核窗口创建失败
+
+（4）-10002 : Socket参数非法
+
+（5）-10003 : 登录失败（需要开通webdriver权限，需要关闭登陆验证）
+
+（6）-10013 : 需要设备认证
+
+（7）-10004 : browserOauth缺失
+
+（8）-10006 : 该店铺上次请求的startBrowser还未执行结束
+
+（9）大于零的状态码：
+
+1 : 初始化数据失败
+
+2 : 检测到当前IP无法正常使用，请联系客服
+
+4 : 初始化时区失败
+
+5 : 初始化代理失败
+
+6 : 初始化黑白名单
+
+7 : 启动内核失败
+
+8 : 初始化浏览器个人目录
+
+9 : 初始化Cookies失败
+
+11 : 初始化浏览器设置文件
+
+13 : 初始化代理信息配置
+
+LastError 表示具体的错误信息
+
+5.4、Action : stopBrowser
+说明：关闭店铺窗口
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "company": "公司",
+
+  "username": "用户名",
+
+  "password": "密码",
+
+  "action": "stopBrowser",
+
+  "browserOauth": "店铺ID",
+
+  "browserId": "店铺数字ID，优先取browserId，没有的话取browserOauth",
+
+  "requestId": "全局唯一标识",
+
+  "duplicate": 0 //副本标志
+
+}
+响应结果：
+
+
+{
+
+  "statusCode": "状态码",
+
+  "err": "异常信息",
+
+  "action": "stopBrowser",
+
+  "requestId": "全局唯一标识"
+
+}
+状态码：
+
+（1） 0 : 成功
+
+（2）-10000 : 未知异常
+
+（3）-10002 : Socket参数非法
+
+（4）-10003 : 登录失败（需要开通webdriver权限，需要关闭登陆验证）
+
+（5）-10013 : 需要设备认证
+
+5.5、Action : logout
+说明：退出登陆状态。
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "action": "logout",
+
+  "requestId": "全局唯一标识"
+
+}
+5.6、Action : exit
+说明：正常退出紫鸟浏览器主进程，会自动关闭已启动店铺并保持店铺cookie等信息。
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+    "action": "exit",   
+
+    "requestId": "全局唯一标识"
+
+}
+响应结果：
+
+
+{
+
+  "statusCode": "状态码",      // 紫鸟V6返回
+
+  "err": "异常信息",      // 紫鸟V6返回
+
+  "action": " exit",
+
+  "requestId": "全局唯一标识"
+
+}
+状态码：
+
+（1）0 : 成功
+
+（2）-10005 : 登出失败
+
+5.7、Action : ClearCache
+说明：清理本地缓存，此接口不需要登陆就可以调用。
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "action": "ClearCache",
+
+  "browserOauths":[ "店铺id 1", "店铺id 2"], // 空值表示删除所有本地缓存
+
+  "requestId": "全局唯一标识" 
+
+}
+响应结果：
+
+
+{
+
+  "statusCode": "状态码",
+
+  "err": "异常信息",
+
+  "action": " ClearCache ",
+
+  "requestId": "全局唯一标识"
+
+}
+状态码：
+
+（1） 0 : 成功
+
+（2）-10000 : 未知异常
+
+5.8、Action : ClearOnline
+说明：用于清理在线的缓存
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+      "company": "公司",
+
+      "username": "用户名",
+
+      "password": "密码",
+    
+    "action": "ClearOnline",
+
+    "browserOauth":"店铺ID", 
+
+    "type":2, // 1 清除所有缓存 2 仅保留cookie  3 仅保留二步认证cookie。 其它值无效。
+
+    "requestId": "全局唯一标识" 
+
+}
+响应结果：
+
+
+{
+
+    "statusCode": "状态码",
+
+    "statusMsg": "", // 具体的描述
+
+    "err": "异常信息",
+
+    "action": "ClearOnline",
+
+    "requestId": "全局唯一标识"
+
+}
+状态码：
+
+（1） 0 : 成功
+
+（2） -10000 : 没有找到记录
+
+5.9、Action : getPluginInstalled
+说明：获取指定店铺的插件是否已通知前端安装
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+
+  "action": "getPluginInstalled ", 
+
+  "requestId": "全局唯一标识" ,
+
+  "browserId": "店铺ID",
+
+  "duplicate": 0 ,//副本标志
+
+  "pluginIds": "插件id,插件id"
+
+}
+响应结果：
+
+
+{
+
+  "statusCode": "状态码",
+
+  "statusMsg": "", // 具体的描述
+
+  "err": "异常信息",
+
+  "action": " getPluginInstalled ",
+
+  "requestId": "全局唯一标识",
+
+  "install_status": true // true 已通知false 未通知
+
+}
+状态码：
+
+（1） 0 : 成功
+
+（2）-10000 : 没有找到记录
+
+5.10、Action : getRunningInfo
+说明：获取当前打开的所有店铺店铺
+
+支持的客户端版本：windows 紫鸟V5、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+{
+    "action": "getRunningInfo", 
+    "requestId": "全局唯一标识" 
+}
+响应结果：
+
+{
+    "statusCode": "状态码",
+    "browsers": [], // 当前打开店铺的信息
+    "requestId": "全局唯一标识"
+}
+状态码：
+
+（1） 0 : 成功
+
+5.11、(新增)Action : updateCore
+说明：更新支持的内核，因为http有超时时间，所以这个action适合循环调用 ，直到返回成功
+
+支持的客户端版本：windows 紫鸟V5（V5.285.7.37及以上）、windows 紫鸟V6（V6.16.0.126及以上）、mac 紫鸟V6（V6.15.0.44及以上）
+
+请求参数：
+
+
+{
+    "action": "updateCore", 
+    "requestId": "全局唯一标识" 
+}
+响应结果：
+
+
+{
+    "statusCode": "状态码",
+    "requestId": "全局唯一标识"
+}
+状态码：
+
+（1） 0 : 成功
+
+（2） -10000 : 处理中
+
+6、F&Q
+6.1、开通查看账号权限
+如果登录后无法查看账号，需要联系管理员开通查看权限，如果使用的是默认的角色，其他人也有用这个角色，可以新建一个角色然后配置对应权限，开通路径如下图：
+
+img
+
+img
+
+6.2、获取紫鸟店铺ID
+账号管理->查看账号->账号详情->账号名称后的ID即紫鸟店铺ID
+
+img
+
+img
+
+还可通过getBrowserList获取店铺列表（参考5.2、Action : getBrowserList），响应中的browserOauth加密店铺ID字段（可用于启动店铺）。
+
+6.3、一个进程下可以多开同一个公司下的多个店铺账号
+一个电脑可以启动多个进程（对应多个端口号）与紫鸟客户端进行通信，一个进程只支持一个公司。
+
+6.4、chromedriver驱动程序下载

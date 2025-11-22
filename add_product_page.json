@@ -1,0 +1,125 @@
+[
+  {
+    "ariaLabel": "",
+    "className": "search-input",
+    "id": "sc-search-field",
+    "inputType": "text",
+    "label": "",
+    "name": "query",
+    "placeholder": "搜索",
+    "type": "input"
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "footer-swlang-reftag",
+    "inputType": "hidden",
+    "label": "",
+    "name": "",
+    "placeholder": "",
+    "type": "input"
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "a2z:vibesTreatment",
+    "inputType": "hidden",
+    "label": "",
+    "name": "",
+    "placeholder": "",
+    "type": "input"
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "",
+    "inputType": "hidden",
+    "label": "",
+    "name": "ue_back",
+    "placeholder": "",
+    "type": "input"
+  },
+  {
+    "className": "sc-search-button search-icon-container",
+    "id": "",
+    "text": "",
+    "type": "button"
+  },
+  {
+    "className": "",
+    "href": "https://sellercentral-japan.amazon.com/AmazonSell",
+    "id": "",
+    "text": "下一代销售",
+    "type": "link"
+  },
+  {
+    "className": "spaui-trigger",
+    "href": "https://sellercentral-japan.amazon.com/gp/help/help.html?itemID=GAMHNVFSF8DT2CQ4",
+    "id": "lyp-learn-more-link",
+    "text": "了解更多信息",
+    "type": "link"
+  },
+  {
+    "className": "spaui-trigger",
+    "href": "https://sellercentral-japan.amazon.com/gp/help/help.html?itemID=G200426310",
+    "id": "",
+    "text": "了解更多信息",
+    "type": "link"
+  },
+  {
+    "className": "spaui-trigger",
+    "href": "https://sellercentral-japan.amazon.com/gp/help/help.html?itemID=G200333160",
+    "id": "",
+    "text": "了解更多信息",
+    "type": "link"
+  },
+  {
+    "className": "",
+    "href": "https://sellercentral-japan.amazon.com/listing/varwiz?ref_=ag_varwiz_xx_prodsrch",
+    "id": "",
+    "text": "使用变体向导创建变体",
+    "type": "link"
+  },
+  {
+    "className": "",
+    "href": "https://sellercentral-japan.amazon.com/ckp",
+    "id": "",
+    "text": "合规性自我评估",
+    "type": "link"
+  },
+  {
+    "className": "",
+    "href": "https://m.media-amazon.com/images/G/01/VSSC/Seller_Release_Notes/Listing_requirement_updates.xlsx",
+    "id": "",
+    "text": "查看计划的变更",
+    "type": "link"
+  },
+  {
+    "className": "a-link-normal",
+    "href": "https://sellercentral-japan.amazon.com/product-search?ref=xx_catadd_favb_xx#",
+    "id": "",
+    "text": "反馈",
+    "type": "link"
+  },
+  {
+    "className": "sc-a-link-normal sc-footer-link",
+    "href": "https://sellercentral-japan.amazon.com/help/hub?ref=xx_contactus_foot_xx",
+    "id": "sc-footer-contactus-link",
+    "text": "帮助",
+    "type": "link"
+  },
+  {
+    "className": "sc-a-link-normal sc-footer-link",
+    "href": "https://sellercentral-japan.amazon.com/gp/help/help.html/ref=xx_help_foot_xx?itemID=521",
+    "id": "sc-footer-policies-link",
+    "text": "计划政策",
+    "type": "link"
+  },
+  {
+    "className": "sc-a-link-normal sc-footer-link",
+    "href": "https://sellercentral-japan.amazon.com/sellermobileapp?ref=xx_sellermobileapp_foot_xx",
+    "id": "sc-footer-sellermobileapp-link",
+    "text": "下载“亚马逊卖家”移动应用",
+    "type": "link"
+  }
+]

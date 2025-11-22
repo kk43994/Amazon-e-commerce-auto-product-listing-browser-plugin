@@ -1,0 +1,69 @@
+[
+  {
+    "ariaLabel": "",
+    "className": "search-input",
+    "id": "sc-search-field",
+    "inputType": "text",
+    "label": "",
+    "name": "query",
+    "placeholder": "搜索",
+    "required": false,
+    "type": "input",
+    "value": "",
+    "visible": true
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "footer-swlang-reftag",
+    "inputType": "hidden",
+    "label": "",
+    "name": "",
+    "placeholder": "",
+    "required": false,
+    "type": "input",
+    "value": "ref_=xx_swlang_foot_xx",
+    "visible": false
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "a2z:vibesTreatment",
+    "inputType": "hidden",
+    "label": "",
+    "name": "",
+    "placeholder": "",
+    "required": false,
+    "type": "input",
+    "value": "C",
+    "visible": false
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "",
+    "inputType": "hidden",
+    "label": "",
+    "name": "ue_back",
+    "placeholder": "",
+    "required": false,
+    "type": "input",
+    "value": "2",
+    "visible": false
+  },
+  {
+    "ariaLabel": "",
+    "className": "",
+    "id": "sc-lang-switcher-footer-select",
+    "label": "",
+    "name": "language",
+    "options": [
+      "日本語",
+      "English",
+      "中文(简体)",
+      "Deutsch",
+      "Español"
+    ],
+    "type": "select"
+  }
+]
