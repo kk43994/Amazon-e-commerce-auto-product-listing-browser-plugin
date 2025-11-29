@@ -34,10 +34,21 @@ class PageDetector {
         // 立即检测一次
         this.detectAndValidate();
 
-        // 定时检测
+        // 添加点击事件监听
+        this.clickListener = () => {
+            setTimeout(() => this.detectAndValidate(), 50); // 点击后几乎立即检测
+        };
+        document.addEventListener('click', this.clickListener);
+
+        // 添加URL变化监听 (针对SPA)
+        this.urlListener = () => this.detectAndValidate();
+        window.addEventListener('hashchange', this.urlListener);
+        window.addEventListener('popstate', this.urlListener);
+
+        // 定时检测 (缩短间隔到 200ms，实现近乎实时的检测)
         this.monitoringInterval = setInterval(() => {
             this.detectAndValidate();
-        }, interval);
+        }, 200);
     }
 
     /**
@@ -47,6 +58,15 @@ class PageDetector {
         if (this.monitoringInterval) {
             clearInterval(this.monitoringInterval);
             this.monitoringInterval = null;
+            if (this.clickListener) {
+                document.removeEventListener('click', this.clickListener);
+                this.clickListener = null;
+            }
+            if (this.urlListener) {
+                window.removeEventListener('hashchange', this.urlListener);
+                window.removeEventListener('popstate', this.urlListener);
+                this.urlListener = null;
+            }
             console.log('[页面检测器] 停止监控');
         }
     }
@@ -98,32 +118,55 @@ class PageDetector {
         // 策略1: URL匹配（最快最准）
         const url = window.location.href;
 
-        if (url.includes('/product_details')) return 'productDetails';
-        if (url.includes('/safety_and_compliance')) return 'safetyCompliance';
-        if (url.includes('/offer')) return 'offer';
-        if (url.includes('/images')) return 'images';
-        if (url.includes('/variations')) return 'variations';
+        if (url.includes('/product_details') || url.includes('#product_details')) return 'productDetails';
+        if (url.includes('/safety_and_compliance') || url.includes('#safety_and_compliance')) return 'safetyCompliance';
+        if (url.includes('/offer') || url.includes('#offer')) return 'offer';
+        if (url.includes('/images') || url.includes('#images')) return 'images';
+        if (url.includes('/variations') || url.includes('#variations')) return 'variations';
         if (url.includes('/add-product')) return 'addProduct';
+        // 日本亚马逊URL检测
+        if (url.includes('/product-search/keywords')) return 'searchProduct';  // 搜索页面
+        if (url.includes('/product-search/product-ids')) return 'productIds';  // 商品编码页面
+        if (url.includes('/product-search') || url.includes('/productsearch')) return 'addProduct';
+        if (url.includes('/listing/products')) return 'addProduct';
+        if (url.includes('/hz/fba/profitcalculator')) return 'profitCalculator';
+
         if (url.includes('sellercentral')) {
             if (url.endsWith('/home') || url === 'https://sellercentral-japan.amazon.com/') {
                 return 'home';
+            }
+            // 日本亚马逊特殊路径
+            if (url.includes('/catalog-items') || url.includes('/product/search')) {
+                return 'addProduct';
             }
         }
 
         // 策略2: 页面标题
         const title = document.title;
         if (title.includes('Add a Product')) return 'addProduct';
+        if (title.includes('商品を追加') || title.includes('商品登録')) return 'addProduct';
         if (title.includes('Product Details')) return 'productDetails';
+        if (title.includes('商品詳細')) return 'productDetails';
 
         // 策略3: DOM特征分析
         const features = this.analyzePageFeatures();
 
-        // 产品详情页特征
-        if (features.hasProductName && features.hasBrand && features.hasDescription) {
+        // 产品详情页特征 (只要有商品名称和品牌名即可，描述可能在下方)
+        if (features.hasProductName && features.hasBrand) {
             return 'productDetails';
         }
 
-        // 报价页特征
+        // 策略3.5: 检查Tab导航栏 (强特征)
+        if (this.hasFormTabs()) {
+            // 如果有Tab栏，尝试根据激活的Tab判断
+            const activeTab = this.getActiveTab();
+            if (activeTab) return activeTab;
+            // 如果没找到激活的Tab，但有变体特征，返回变体页
+            if (features.hasVariations) return 'variations';
+            return 'productDetails'; // 默认认为是详情页
+        }
+
+        // 报价页特征 (增加配送渠道作为必要条件，防止误判)
         if (features.hasQuantity && features.hasPrice && features.hasFulfillment) {
             return 'offer';
         }
@@ -134,13 +177,29 @@ class PageDetector {
         }
 
         // 安全合规页特征
-        if (features.hasWarranty && features.hasDangerousGoods) {
+        if (features.hasDangerousGoods) {
             return 'safetyCompliance';
         }
 
-        // 策略4: 特定元素ID检测
-        if (document.getElementById('ProductImage_MAIN-input_input')) {
+        // 策略4: 特定元素ID/UID检测 (基于文档记录)
+        // 产品详情页: 46_38 (商品名称), 46_42 (品牌名)
+        if (this.hasElementWithUid('46_38') || this.hasElementWithUid('46_42')) {
+            return 'productDetails';
+        }
+
+        // 报价页: 48_35 (数量), 48_53 (您的价格)
+        if (this.hasElementWithUid('48_35') || this.hasElementWithUid('48_53')) {
+            return 'offer';
+        }
+
+        // 图片页: 47_31 (批量上传提示), ProductImage_MAIN-input_input
+        if (this.hasElementWithUid('47_31') || document.getElementById('ProductImage_MAIN-input_input')) {
             return 'images';
+        }
+
+        // 安全合规页: 53_30 (原产国), 53_46 (危险商品规管)
+        if (this.hasElementWithUid('53_30') || this.hasElementWithUid('53_46')) {
+            return 'safetyCompliance';
         }
 
         return 'unknown';
@@ -154,25 +213,91 @@ class PageDetector {
 
         return {
             // 产品详情页特征
-            hasProductName: text.includes('商品名称') || text.includes('Product Title'),
-            hasBrand: text.includes('品牌名') || text.includes('Brand Name'),
+            hasProductName: text.includes('商品名称') || text.includes('Product Title') || text.includes('Product Name') || document.querySelector('input[name="item_name"]'),
+            hasBrand: text.includes('品牌名') || text.includes('Brand Name') || text.includes('Brand') || document.querySelector('input[name="brand_name"]'),
             hasDescription: text.includes('产品描述') || text.includes('Product Description'),
             hasBulletPoints: text.includes('要点') || text.includes('Bullet Points'),
 
             // 报价页特征
             hasQuantity: text.includes('数量') || text.includes('Quantity'),
-            hasPrice: text.includes('您的价格') || text.includes('Your Price'),
+            hasPrice: text.includes('您的价格') || text.includes('Your Price') || text.includes('Standard Price'),
             hasFulfillment: text.includes('配送渠道') || text.includes('Fulfillment'),
 
             // 图片页特征
-            hasImageUpload: text.includes('上传多个文件') || text.includes('Upload multiple'),
+            hasImageUpload: text.includes('上传多个文件') || text.includes('Upload multiple') || text.includes('Image Manager'),
             hasMainImage: text.includes('主图片') || text.includes('Main Image'),
+
+            // 变体页特征
+            hasVariations: text.includes('变体类型') || text.includes('Variation Theme') || text.includes('Variation Type'),
 
             // 安全合规页特征
             hasWarranty: text.includes('保修说明') || text.includes('Warranty'),
-            hasDangerousGoods: text.includes('危险商品规管') || text.includes('Dangerous Goods'),
+            hasDangerousGoods: text.includes('危险商品规管') || text.includes('Dangerous Goods') || text.includes('Safety & Compliance'),
             hasCountryOfOrigin: text.includes('原产国') || text.includes('Country of Origin')
         };
+    }
+
+    /**
+     * 检查是否存在表单Tab导航
+     */
+    hasFormTabs() {
+        // 查找常见的Tab容器特征
+        const tabList = document.querySelector('ul[role="tablist"], div[role="tablist"], .kat-tabs');
+        if (tabList) return true;
+
+        // 检查特定的Tab文本
+        const bodyText = document.body.textContent;
+        if ((bodyText.includes('产品详情') || bodyText.includes('Product Details')) &&
+            (bodyText.includes('图片') || bodyText.includes('Images')) &&
+            (bodyText.includes('报价') || bodyText.includes('Offer'))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 获取当前激活的Tab
+     */
+    getActiveTab() {
+        // 支持标准 active/selected 类 (限制在 role=tab 或特定容器内)
+        const activeElement = document.querySelector('[role="tab"][aria-selected="true"], .kat-tabs .active, .kat-tabs .selected');
+        if (activeElement) {
+            const text = activeElement.textContent;
+            if (text.includes('详情') || text.includes('Details')) return 'productDetails';
+            if (text.includes('图片') || text.includes('Images')) return 'images';
+            if (text.includes('报价') || text.includes('Offer')) return 'offer';
+            if (text.includes('合规') || text.includes('Compliance')) return 'safetyCompliance';
+            if (text.includes('变体') || text.includes('Variations')) return 'variations';
+        }
+
+        // 支持 kat-tab
+        const activeKatTab = document.querySelector('kat-tab[selected], kat-tab[active]');
+        if (activeKatTab) {
+            const text = activeKatTab.textContent || activeKatTab.getAttribute('label') || '';
+            if (text.includes('详情') || text.includes('Details')) return 'productDetails';
+            if (text.includes('图片') || text.includes('Images')) return 'images';
+            if (text.includes('报价') || text.includes('Offer')) return 'offer';
+            if (text.includes('合规') || text.includes('Compliance')) return 'safetyCompliance';
+            if (text.includes('变体') || text.includes('Variations')) return 'variations';
+        }
+
+        return null;
+    }
+
+    /**
+     * 检查是否存在具有特定UID的元素 (支持Shadow DOM)
+     */
+    hasElementWithUid(uid) {
+        // 1. 检查常规DOM
+        if (document.querySelector(`[uid="${uid}"]`) || document.querySelector(`[data-uid="${uid}"]`)) {
+            return true;
+        }
+
+        // 2. 简单的Shadow DOM检查 (只检查第一层，避免性能问题)
+        // 实际的Shadow DOM遍历比较耗时，这里作为快速检测只做浅层检查
+        // 如果需要深层检查，可以使用 amazon-form-filler.js 中的 findElementInShadowDOM
+        return false;
     }
 
     /**

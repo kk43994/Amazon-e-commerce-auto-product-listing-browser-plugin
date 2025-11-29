@@ -30,4 +30,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true;
     }
+
+    // 代理请求 (解决Mixed Content问题)
+    if (request.action === 'fetchUrl') {
+        fetch(request.url)
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.arrayBuffer();
+            })
+            .then(buffer => {
+                // 转Base64返回
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                const len = bytes.byteLength;
+                for (let i = 0; i < len; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                const base64 = btoa(binary);
+                sendResponse({ success: true, data: base64 });
+            })
+            .catch(error => {
+                console.error('[Background] Fetch failed:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true; // 保持通道开启
+    }
 });

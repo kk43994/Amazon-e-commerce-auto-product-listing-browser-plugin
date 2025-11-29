@@ -2,16 +2,14 @@
   "manifest_version": 3,
   "name": "亚马逊商品快速上传助手",
   "name_en": "Amazon Product Quick Upload",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "从Excel导入商品数据，一键自动填写亚马逊商品上传表单。支持批量处理、真人行为模拟、智能字段匹配。",
   "description_en": "Import product data from Excel and auto-fill Amazon product upload forms. Supports batch processing, human-like behavior simulation, and smart field matching.",
-
   "permissions": [
     "activeTab",
     "scripting",
     "storage"
   ],
-
   "host_permissions": [
     "*://*.amazon.com/*",
     "*://*.amazon.co.jp/*",
@@ -20,9 +18,9 @@
     "*://*.amazon.fr/*",
     "*://*.amazon.it/*",
     "*://*.amazon.es/*",
-    "*://*.amazon.ca/*"
+    "*://*.amazon.ca/*",
+    "http://localhost:8000/*"
   ],
-
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -31,13 +29,11 @@
       "128": "icons/icon128.png"
     }
   },
-
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-
   "content_scripts": [
     {
       "matches": [
@@ -54,22 +50,28 @@
         "page-detector.js",
         "amazon-navigator.js",
         "amazon-form-filler.js",
+        "floating-panel.js",
         "content.js",
         "page-analyzer.js",
         "learning-mode.js"
       ],
+      "css": [
+        "floating-panel.css"
+      ],
       "run_at": "document_idle"
     }
   ],
-
   "background": {
     "service_worker": "background.js"
   },
-
   "web_accessible_resources": [
     {
-      "resources": ["libs/*"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "libs/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

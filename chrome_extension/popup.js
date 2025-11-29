@@ -1,7 +1,12 @@
 /**
- * Popup.js - 主控制逻辑
+ * Popup.js - 主控制逻辑 v3.0.2
  * 功能：Excel读取、页面监控、自动化上传控制、日志显示
+ * 更新：集成专业日志系统，增强操作追踪
  */
+
+// ========== 初始化日志系统 ==========
+const logger = new ExtensionLogger('popup');
+logger.info('插件初始化 v3.0.2');
 
 // ========== 全局状态 ==========
 let state = {
@@ -20,50 +25,63 @@ let state = {
 };
 
 // ========== DOM元素 ==========
-const elements = {
-    // 页面监控
-    statusDot: document.getElementById('statusDot'),
-    currentPageText: document.getElementById('currentPageText'),
-    expectedPageText: document.getElementById('expectedPageText'),
+let elements = {};
 
-    // Excel上传
-    excelFile: document.getElementById('excelFile'),
-    fileUpload: document.getElementById('fileUpload'),
-    fileName: document.getElementById('fileName'),
+function initializeElements() {
+    elements = {
+        // 页面监控
+        statusDot: document.getElementById('statusDot'),
+        currentPageText: document.getElementById('currentPageText'),
+        expectedPageText: document.getElementById('expectedPageText'),
 
-    // 商品导航
-    productNav: document.getElementById('productNav'),
-    totalProducts: document.getElementById('totalProducts'),
-    currentProductTitle: document.getElementById('currentProductTitle'),
-    currentProductASIN: document.getElementById('currentProductASIN'),
-    currentProductPrice: document.getElementById('currentProductPrice'),
-    prevProduct: document.getElementById('prevProduct'),
-    nextProduct: document.getElementById('nextProduct'),
+        // Excel上传
+        excelFile: document.getElementById('excelFile'),
+        fileUpload: document.getElementById('fileUpload'),
+        fileName: document.getElementById('fileName'),
 
-    // 自动化设置
-    autoSearch: document.getElementById('autoSearch'),
-    autoNavigate: document.getElementById('autoNavigate'),
-    autoFill: document.getElementById('autoFill'),
-    humanLike: document.getElementById('humanLike'),
+        // 商品导航
+        productNav: document.getElementById('productNav'),
+        totalProducts: document.getElementById('totalProducts'),
+        currentProductTitle: document.getElementById('currentProductTitle'),
+        currentProductASIN: document.getElementById('currentProductASIN'),
+        currentProductPrice: document.getElementById('currentProductPrice'),
+        prevProduct: document.getElementById('prevProduct'),
+        nextProduct: document.getElementById('nextProduct'),
 
-    // 操作按钮
-    startAutoUpload: document.getElementById('startAutoUpload'),
-    fillCurrentPage: document.getElementById('fillCurrentPage'),
-    controlButtons: document.getElementById('controlButtons'),
-    pauseButton: document.getElementById('pauseButton'),
-    stopButton: document.getElementById('stopButton'),
+        // 自动化设置
+        autoSearch: document.getElementById('autoSearch'),
+        autoNavigate: document.getElementById('autoNavigate'),
+        autoFill: document.getElementById('autoFill'),
+        humanLike: document.getElementById('humanLike'),
 
-    // 进度和日志
-    progressSection: document.getElementById('progressSection'),
-    progressFill: document.getElementById('progressFill'),
-    progressText: document.getElementById('progressText'),
-    logs: document.getElementById('logs')
-};
+        // 操作按钮
+        startAutoUpload: document.getElementById('startAutoUpload'),
+        fillCurrentPage: document.getElementById('fillCurrentPage'),
+        controlButtons: document.getElementById('controlButtons'),
+        pauseButton: document.getElementById('pauseButton'),
+        stopButton: document.getElementById('stopButton'),
+
+        // 进度和日志
+        progressSection: document.getElementById('progressSection'),
+        progressFill: document.getElementById('progressFill'),
+        progressText: document.getElementById('progressText'),
+        logs: document.getElementById('logs')
+    };
+
+    // 验证关键元素是否存在
+    if (!elements.fileName) console.error('CRITICAL: fileName element not found!');
+    if (!elements.fileUpload) console.error('CRITICAL: fileUpload element not found!');
+}
 
 // ========== 初始化 ==========
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOMContentLoaded事件触发');
+
+    // 初始化DOM元素
+    initializeElements();
+
     // 显示日志容器
-    elements.logs.classList.add('show');
+    if (elements.logs) elements.logs.classList.add('show');
 
     // 初始化日志
     addLog('info', '🚀 插件已加载');
@@ -71,8 +89,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 检查xlsx库
     if (typeof XLSX !== 'undefined') {
         addLog('success', '✓ Excel解析库加载成功');
+        console.log('XLSX库加载成功');
     } else {
         addLog('error', '✗ Excel解析库加载失败，请检查libs/xlsx.full.min.js');
+        console.error('XLSX库未定义');
+    }
+
+    // 检查文件输入元素
+    if (elements.excelFile) {
+        console.log('文件输入元素存在:', elements.excelFile);
+    } else {
+        console.error('文件输入元素不存在');
     }
 
     loadSettings();
@@ -91,10 +118,10 @@ function loadSettings() {
             state.settings = { ...state.settings, ...result.settings };
 
             // 更新UI
-            elements.autoSearch.checked = state.settings.autoSearch;
-            elements.autoNavigate.checked = state.settings.autoNavigate;
-            elements.autoFill.checked = state.settings.autoFill;
-            elements.humanLike.checked = state.settings.humanLike;
+            if (elements.autoSearch) elements.autoSearch.checked = state.settings.autoSearch;
+            if (elements.autoNavigate) elements.autoNavigate.checked = state.settings.autoNavigate;
+            if (elements.autoFill) elements.autoFill.checked = state.settings.autoFill;
+            if (elements.humanLike) elements.humanLike.checked = state.settings.humanLike;
         }
     });
 }
@@ -104,39 +131,49 @@ function saveSettings() {
 }
 
 function updateSettingsFromUI() {
-    state.settings.autoSearch = elements.autoSearch.checked;
-    state.settings.autoNavigate = elements.autoNavigate.checked;
-    state.settings.autoFill = elements.autoFill.checked;
-    state.settings.humanLike = elements.humanLike.checked;
+    if (elements.autoSearch) state.settings.autoSearch = elements.autoSearch.checked;
+    if (elements.autoNavigate) state.settings.autoNavigate = elements.autoNavigate.checked;
+    if (elements.autoFill) state.settings.autoFill = elements.autoFill.checked;
+    if (elements.humanLike) state.settings.humanLike = elements.humanLike.checked;
     saveSettings();
 }
 
 // ========== 事件监听 ==========
 function setupEventListeners() {
+    console.log('setupEventListeners被调用');
+
     // Excel文件上传
-    elements.excelFile.addEventListener('change', handleFileSelect);
+    if (elements.excelFile) {
+        elements.excelFile.addEventListener('change', handleFileSelect);
+        console.log('文件change事件监听器已添加');
+    } else {
+        console.error('无法添加事件监听器：elements.excelFile不存在');
+    }
 
     // 商品导航
-    elements.prevProduct.addEventListener('click', () => navigateProduct(-1));
-    elements.nextProduct.addEventListener('click', () => navigateProduct(1));
+    if (elements.prevProduct) elements.prevProduct.addEventListener('click', () => navigateProduct(-1));
+    if (elements.nextProduct) elements.nextProduct.addEventListener('click', () => navigateProduct(1));
 
     // 设置变化
-    [elements.autoSearch, elements.autoNavigate, elements.autoFill, elements.humanLike]
-        .forEach(checkbox => {
+    const settingsCheckboxes = [elements.autoSearch, elements.autoNavigate, elements.autoFill, elements.humanLike];
+    settingsCheckboxes.forEach(checkbox => {
+        if (checkbox) {
             checkbox.addEventListener('change', updateSettingsFromUI);
-        });
+        }
+    });
 
     // 操作按钮
-    elements.startAutoUpload.addEventListener('click', startAutoUpload);
-    elements.fillCurrentPage.addEventListener('click', fillCurrentPageOnly);
-    elements.pauseButton.addEventListener('click', togglePause);
-    elements.stopButton.addEventListener('click', stopExecution);
+    if (elements.startAutoUpload) elements.startAutoUpload.addEventListener('click', startAutoUpload);
+    if (elements.fillCurrentPage) elements.fillCurrentPage.addEventListener('click', fillCurrentPageOnly);
+    if (elements.pauseButton) elements.pauseButton.addEventListener('click', togglePause);
+    if (elements.stopButton) elements.stopButton.addEventListener('click', stopExecution);
 }
 
 // ========== 页面监控 ==========
 async function checkCurrentPage() {
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab) return;
 
         chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' }, (response) => {
             if (chrome.runtime.lastError) {
@@ -174,30 +211,41 @@ function updatePageStatus(page, expected) {
     };
 
     const pageName = pageNames[page] || page;
-    elements.currentPageText.textContent = `当前页: ${pageName}`;
+    if (elements.currentPageText) elements.currentPageText.textContent = `当前页: ${pageName}`;
 
     // 更新状态点颜色
-    elements.statusDot.className = 'status-dot';
-
-    if (!expected) {
-        elements.statusDot.classList.add('unknown');
-        elements.expectedPageText.textContent = '';
-    } else if (page === expected) {
-        elements.statusDot.classList.add('matched');
-        elements.expectedPageText.textContent = '✓ 页面正确';
-    } else {
-        elements.statusDot.classList.add('mismatched');
-        elements.expectedPageText.textContent = `⚠️ 期望: ${pageNames[expected]}`;
+    if (elements.statusDot) {
+        elements.statusDot.className = 'status-dot';
+        if (!expected) {
+            elements.statusDot.classList.add('unknown');
+            if (elements.expectedPageText) elements.expectedPageText.textContent = '';
+        } else if (page === expected) {
+            elements.statusDot.classList.add('matched');
+            if (elements.expectedPageText) elements.expectedPageText.textContent = '✓ 页面正确';
+        } else {
+            elements.statusDot.classList.add('mismatched');
+            if (elements.expectedPageText) elements.expectedPageText.textContent = `⚠️ 期望: ${pageNames[expected]}`;
+        }
     }
 }
 
 // ========== Excel文件处理 ==========
 async function handleFileSelect(event) {
+    console.log('handleFileSelect被调用', event);
     const file = event.target.files[0];
+    console.log('选择的文件:', file);
     if (!file) {
         addLog('warning', '未选择文件');
+        console.log('没有文件被选择');
         return;
     }
+
+    // 开始操作追踪
+    logger.startOperation('excel_upload', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+    });
 
     addLog('info', `📁 选择文件: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
 
@@ -229,15 +277,39 @@ async function handleFileSelect(event) {
         state.products = products;
         state.currentIndex = 0;
 
-        elements.fileName.textContent = file.name;
-        elements.fileUpload.classList.add('has-file');
-        elements.totalProducts.textContent = products.length;
+        // Defensive check: Ensure elements are available
+        if (!elements.fileName) {
+            console.warn('elements.fileName is missing, attempting to re-fetch...');
+            elements.fileName = document.getElementById('fileName');
+        }
+        if (!elements.fileUpload) {
+            console.warn('elements.fileUpload is missing, attempting to re-fetch...');
+            elements.fileUpload = document.getElementById('fileUpload');
+        }
+        if (!elements.totalProducts) {
+            console.warn('elements.totalProducts is missing, attempting to re-fetch...');
+            elements.totalProducts = document.getElementById('totalProducts');
+        }
 
-        elements.productNav.classList.add('show');
+        if (elements.fileName) {
+            elements.fileName.textContent = file.name;
+        } else {
+            console.error('Failed to find fileName element even after re-fetch');
+        }
+
+        if (elements.fileUpload) {
+            elements.fileUpload.classList.add('has-file');
+        }
+
+        if (elements.totalProducts) {
+            elements.totalProducts.textContent = products.length;
+        }
+
+        if (elements.productNav) elements.productNav.classList.add('show');
         updateProductDisplay();
 
-        elements.startAutoUpload.disabled = false;
-        elements.fillCurrentPage.disabled = false;
+        if (elements.startAutoUpload) elements.startAutoUpload.disabled = false;
+        if (elements.fillCurrentPage) elements.fillCurrentPage.disabled = false;
         addLog('success', '✓ 界面更新完成');
 
         // 步骤5: 保存到存储
@@ -251,16 +323,25 @@ async function handleFileSelect(event) {
         addLog('success', `🎉 Excel导入成功！共 ${products.length} 个商品，当前第 ${state.currentIndex + 1} 个`);
         addLog('info', '💡 请点击"开始全自动上传"或"仅填写当前页面"按钮');
 
+        // 结束操作追踪 - 成功
+        logger.endOperation('excel_upload', true, {
+            productCount: products.length,
+            validProducts: products.length
+        });
+
     } catch (error) {
         addLog('error', `❌ 读取失败: ${error.message}`);
         console.error('Excel读取详细错误:', error);
 
-        // 重置UI状态
-        elements.fileName.textContent = '';
-        elements.fileUpload.classList.remove('has-file');
-        elements.productNav.classList.remove('show');
-        elements.startAutoUpload.disabled = true;
-        elements.fillCurrentPage.disabled = true;
+        // 结束操作追踪 - 失败
+        logger.endOperation('excel_upload', false, error.message);
+
+        // 重置UI状态 - Defensive Checks
+        if (elements.fileName) elements.fileName.textContent = '';
+        if (elements.fileUpload) elements.fileUpload.classList.remove('has-file');
+        if (elements.productNav) elements.productNav.classList.remove('show');
+        if (elements.startAutoUpload) elements.startAutoUpload.disabled = true;
+        if (elements.fillCurrentPage) elements.fillCurrentPage.disabled = true;
 
         addLog('info', '请检查文件格式并重新选择');
     }
@@ -268,21 +349,64 @@ async function handleFileSelect(event) {
 
 function readExcelFile(file) {
     return new Promise((resolve, reject) => {
+        // Set a timeout to prevent hanging
+        const timeoutId = setTimeout(() => {
+            reject(new Error('文件读取超时 (10秒)'));
+        }, 10000);
+
         const reader = new FileReader();
 
         reader.onload = (e) => {
+            clearTimeout(timeoutId);
             try {
+                console.log('Binary read successful, parsing with XLSX...');
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                console.log('XLSX parse successful');
                 resolve(jsonData);
             } catch (error) {
-                reject(error);
+                console.warn('XLSX binary parse failed:', error);
+
+                // Fallback for CSV with different encoding (e.g., GBK)
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    console.log('Trying Text read for CSV (GBK)...');
+
+                    const textReader = new FileReader();
+
+                    textReader.onload = (e) => {
+                        try {
+                            console.log('Text read successful, parsing CSV...');
+                            const workbook = XLSX.read(e.target.result, { type: 'string' });
+                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                            console.log('CSV parse successful');
+                            resolve(jsonData);
+                        } catch (textError) {
+                            console.error('CSV text parse failed:', textError);
+                            reject(new Error('CSV解析失败，请尝试另存为标准UTF-8格式'));
+                        }
+                    };
+
+                    textReader.onerror = () => {
+                        console.error('Text reader error');
+                        reject(new Error('CSV文本读取失败'));
+                    };
+
+                    textReader.readAsText(file, 'GBK'); // Try GBK for Chinese users
+                } else {
+                    reject(error);
+                }
             }
         };
 
-        reader.onerror = () => reject(new Error('文件读取失败'));
+        reader.onerror = () => {
+            clearTimeout(timeoutId);
+            reject(new Error('文件读取失败'));
+        };
+
+        console.log('Starting binary read...');
         reader.readAsArrayBuffer(file);
     });
 }
@@ -323,13 +447,13 @@ function updateProductDisplay() {
 
     const product = state.products[state.currentIndex];
 
-    elements.currentProductTitle.textContent = product.title || '-';
-    elements.currentProductASIN.textContent = product.asin || '-';
-    elements.currentProductPrice.textContent = product.your_price ? `¥${product.your_price}` : '-';
+    if (elements.currentProductTitle) elements.currentProductTitle.textContent = product.title || '-';
+    if (elements.currentProductASIN) elements.currentProductASIN.textContent = product.asin || '-';
+    if (elements.currentProductPrice) elements.currentProductPrice.textContent = product.your_price ? `¥${product.your_price}` : '-';
 
     // 更新按钮状态
-    elements.prevProduct.disabled = state.currentIndex === 0;
-    elements.nextProduct.disabled = state.currentIndex === state.products.length - 1;
+    if (elements.prevProduct) elements.prevProduct.disabled = state.currentIndex === 0;
+    if (elements.nextProduct) elements.nextProduct.disabled = state.currentIndex === state.products.length - 1;
 }
 
 // ========== 自动上传流程 ==========
@@ -339,77 +463,42 @@ async function startAutoUpload() {
         return;
     }
 
-    if (state.isRunning) {
-        addLog('warning', '已有任务在运行中');
-        return;
-    }
+    // 保存数据到存储
+    await chrome.storage.local.set({
+        products: state.products,
+        currentIndex: state.currentIndex,
+        settings: state.settings,
+        workflowStatus: 'running'
+    });
 
-    state.isRunning = true;
-    state.isPaused = false;
+    addLog('info', '正在启动悬浮面板...');
 
-    // 更新UI
-    elements.startAutoUpload.disabled = true;
-    elements.fillCurrentPage.disabled = true;
-    elements.controlButtons.style.display = 'flex';
-    elements.progressSection.classList.add('show');
-    elements.logs.classList.add('show');
-
-    addLog('info', `========== 开始自动上传 ==========`);
-    addLog('info', `总共 ${state.products.length} 个商品`);
-
-    // 从当前索引开始上传
-    for (let i = state.currentIndex; i < state.products.length; i++) {
-        // 检查是否暂停或停止
-        if (!state.isRunning) {
-            addLog('info', '已停止');
-            break;
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab) {
+            throw new Error('未找到活动标签页');
         }
 
-        while (state.isPaused) {
-            await sleep(500);
+        // 检查URL是否匹配Amazon
+        const isAmazon = tab.url.match(/^https?:\/\/.*\.amazon\.(com|co\.jp|co\.uk|de|fr|it|es|ca)\/.*$/);
+        if (!isAmazon) {
+            throw new Error('请在亚马逊卖家中心页面使用此功能');
         }
 
-        state.currentIndex = i;
-        updateProductDisplay();
+        // 发送启动消息
+        await sendMessageWithRetry(tab.id, { action: 'startFloatingPanel' });
 
-        const product = state.products[i];
-        addLog('info', `\n[${i + 1}/${state.products.length}] ${product.title || product.asin}`);
+        addLog('success', '悬浮面板已启动！您可以关闭此窗口了。');
 
-        try {
-            // 执行完整上传流程
-            await uploadProduct(product);
+        // 可选：自动关闭popup
+        // window.close();
 
-            addLog('success', `✅ 商品 ${i + 1} 上传完成`);
-
-            // 更新进度
-            updateProgress((i + 1) / state.products.length * 100);
-
-            // 随机延迟（模拟真人）
-            if (state.settings.humanLike && i < state.products.length - 1) {
-                const delay = randomInt(3000, 6000);
-                addLog('info', `等待 ${(delay / 1000).toFixed(1)}s...`);
-                await sleep(delay);
-            }
-
-        } catch (error) {
-            addLog('error', `❌ 商品 ${i + 1} 失败: ${error.message}`);
-
-            // 询问是否继续
-            const shouldContinue = confirm(`商品 ${i + 1} 上传失败:\n${error.message}\n\n是否继续下一个?`);
-            if (!shouldContinue) {
-                break;
-            }
+    } catch (error) {
+        addLog('error', `启动失败: ${error.message}`);
+        if (error.message.includes('无法连接') || error.message.includes('Could not establish connection')) {
+            addLog('info', '💡 提示：请确保您在亚马逊页面上，并尝试刷新页面');
         }
     }
-
-    // 完成
-    state.isRunning = false;
-    addLog('success', `========== 全部完成 ==========`);
-
-    // 重置UI
-    elements.controlButtons.style.display = 'none';
-    elements.startAutoUpload.disabled = false;
-    elements.fillCurrentPage.disabled = false;
 }
 
 /**
@@ -422,10 +511,10 @@ async function uploadProduct(product) {
     if (state.settings.autoSearch) {
         addLog('info', `  [1/5] 搜索ASIN: ${product.asin}`);
 
-        const searchResult = await sendMessage(tab.id, {
+        const searchResult = await sendMessageWithRetry(tab.id, {
             action: 'searchASIN',
             asin: product.asin
-        });
+        }, 3);
 
         if (!searchResult.success) {
             throw new Error(`ASIN搜索失败: ${searchResult.error}`);
@@ -452,13 +541,13 @@ async function uploadProduct(product) {
         // 等待页面加载
         await waitForPage(tab.id, page);
 
-        // 填写表单
-        const fillResult = await sendMessage(tab.id, {
+        // 填写表单 - 使用重试机制
+        const fillResult = await sendMessageWithRetry(tab.id, {
             action: 'fillPage',
             page: page,
             product: product,
             settings: state.settings
-        });
+        }, 3);
 
         if (!fillResult.success) {
             throw new Error(`${pageNames[page]}填写失败: ${fillResult.error}`);
@@ -469,10 +558,10 @@ async function uploadProduct(product) {
         // 自动导航到下一页（除了最后一页）
         if (state.settings.autoNavigate && i < pages.length - 1) {
             await sleep(1000);
-            await sendMessage(tab.id, {
+            await sendMessageWithRetry(tab.id, {
                 action: 'navigateToPage',
                 page: pages[i + 1]
-            });
+            }, 2);
         }
     }
 }
@@ -492,13 +581,18 @@ async function fillCurrentPageOnly() {
 
     try {
         // 步骤1: 获取当前标签页
-        addLog('info', '⏳ 步骤1/3: 获取当前标签页...');
+        addLog('info', '⏳ 步骤1/4: 获取当前标签页...');
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         addLog('success', `✓ 标签页ID: ${tab.id}`);
 
-        // 步骤2: 检测当前页面类型
-        addLog('info', '⏳ 步骤2/3: 检测页面类型...');
-        const status = await sendMessage(tab.id, { action: 'getPageStatus' });
+        // 步骤2: 等待页面就绪
+        addLog('info', '⏳ 步骤2/4: 等待页面加载...');
+        await waitForPageReady(tab.id);
+        addLog('success', '✓ 页面已就绪');
+
+        // 步骤3: 检测当前页面类型
+        addLog('info', '⏳ 步骤3/4: 检测页面类型...');
+        const status = await sendMessageWithRetry(tab.id, { action: 'getPageStatus' }, 2);
         const currentPage = status.page;
 
         const pageNames = {
@@ -514,11 +608,11 @@ async function fillCurrentPageOnly() {
             throw new Error('无法识别当前页面类型，请确保在Amazon商品编辑页面');
         }
 
-        // 步骤3: 填写表单
-        addLog('info', '⏳ 步骤3/3: 填写表单字段...');
+        // 步骤4: 填写表单
+        addLog('info', '⏳ 步骤4/4: 填写表单字段...');
         addLog('info', `设置: 自动填写=${state.settings.autoFill}, 真人模拟=${state.settings.humanLike}`);
 
-        const result = await sendMessage(tab.id, {
+        const result = await sendMessageWithRetry(tab.id, {
             action: 'fillPage',
             page: currentPage,
             product: product,
@@ -544,10 +638,10 @@ function togglePause() {
     state.isPaused = !state.isPaused;
 
     if (state.isPaused) {
-        elements.pauseButton.innerHTML = '<span>▶️</span><span>继续</span>';
+        if (elements.pauseButton) elements.pauseButton.innerHTML = '<span>▶️</span><span>继续</span>';
         addLog('warning', '⏸️ 已暂停');
     } else {
-        elements.pauseButton.innerHTML = '<span>⏸️</span><span>暂停</span>';
+        if (elements.pauseButton) elements.pauseButton.innerHTML = '<span>⏸️</span><span>暂停</span>';
         addLog('info', '▶️ 继续执行');
     }
 }
@@ -556,9 +650,9 @@ function stopExecution() {
     state.isRunning = false;
     state.isPaused = false;
 
-    elements.controlButtons.style.display = 'none';
-    elements.startAutoUpload.disabled = false;
-    elements.fillCurrentPage.disabled = false;
+    if (elements.controlButtons) elements.controlButtons.style.display = 'none';
+    if (elements.startAutoUpload) elements.startAutoUpload.disabled = false;
+    if (elements.fillCurrentPage) elements.fillCurrentPage.disabled = false;
 
     addLog('warning', '⏹️ 已停止');
 }
@@ -566,12 +660,34 @@ function stopExecution() {
 // ========== 进度更新 ==========
 function updateProgress(percent) {
     const rounded = Math.round(percent);
-    elements.progressFill.style.width = rounded + '%';
-    elements.progressText.textContent = `${rounded}% (${state.currentIndex + 1}/${state.products.length})`;
+    if (elements.progressFill) elements.progressFill.style.width = rounded + '%';
+    if (elements.progressText) elements.progressText.textContent = `${rounded}% (${state.currentIndex + 1}/${state.products.length})`;
 }
 
 // ========== 日志管理 ==========
 function addLog(type, message) {
+    // 记录到新的日志系统 v3.0.2
+    if (typeof logger !== 'undefined') {
+        switch (type) {
+            case 'error':
+                logger.error(message);
+                break;
+            case 'warn':
+            case 'warning':
+                logger.warn(message);
+                break;
+            case 'success':
+            case 'info':
+                logger.info(message);
+                break;
+            default:
+                logger.debug(message);
+        }
+    }
+
+    // 保持原有的UI显示
+    if (!elements.logs) return;
+
     const time = new Date().toLocaleTimeString('zh-CN');
 
     const logEntry = document.createElement('div');
@@ -604,13 +720,38 @@ function addLog(type, message) {
 // ========== 工具函数 ==========
 function sendMessage(tabId, message) {
     return new Promise((resolve, reject) => {
-        chrome.tabs.sendMessage(tabId, message, (response) => {
-            if (chrome.runtime.lastError) {
-                reject(new Error(chrome.runtime.lastError.message));
-            } else {
-                resolve(response || {});
-            }
-        });
+        // 添加超时机制
+        let timeoutId = setTimeout(() => {
+            console.error('消息发送超时:', message.action);
+            reject(new Error(`消息超时: ${message.action}`));
+        }, 30000); // 30秒超时
+
+        try {
+            chrome.tabs.sendMessage(tabId, message, (response) => {
+                clearTimeout(timeoutId);
+
+                if (chrome.runtime.lastError) {
+                    console.error('Chrome运行时错误:', chrome.runtime.lastError);
+                    // 更友好的错误消息
+                    if (chrome.runtime.lastError.message.includes('message channel closed')) {
+                        reject(new Error('页面响应超时，请刷新页面后重试'));
+                    } else if (chrome.runtime.lastError.message.includes('Could not establish connection')) {
+                        reject(new Error('无法连接到页面，请刷新页面后重试'));
+                    } else {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    }
+                } else if (!response) {
+                    console.warn('收到空响应:', message.action);
+                    resolve({ success: false, error: '页面无响应' });
+                } else {
+                    resolve(response);
+                }
+            });
+        } catch (error) {
+            clearTimeout(timeoutId);
+            console.error('发送消息异常:', error);
+            reject(error);
+        }
     });
 }
 
@@ -630,6 +771,74 @@ async function waitForPage(tabId, expectedPage, timeout = 10000) {
     throw new Error(`等待页面超时: ${expectedPage}`);
 }
 
+// 等待页面完全加载并准备就绪
+async function waitForPageReady(tabId, maxRetries = 3) {
+    for (let retry = 0; retry < maxRetries; retry++) {
+        try {
+            // 先等待一下让页面稳定
+            await sleep(2000);
+
+            // 尝试发送测试消息
+            const response = await sendMessageWithRetry(tabId, {
+                action: 'getPageStatus'
+            }, retry === 0 ? 1 : 3); // 第一次尝试1次，后续尝试3次
+
+            if (response && (response.page || response.page === 'unknown')) {
+                return true;
+            }
+        } catch (error) {
+            console.log(`页面检测尝试 ${retry + 1}/${maxRetries} 失败:`, error.message);
+
+            if (retry < maxRetries - 1) {
+                addLog('warning', `⏳ 页面未就绪，等待3秒后重试...`);
+                await sleep(3000);
+            }
+        }
+    }
+
+    throw new Error('页面未能在预期时间内就绪');
+}
+
+// 带重试的消息发送
+async function sendMessageWithRetry(tabId, message, maxRetries = 3) {
+    let lastError = null;
+
+    for (let retry = 0; retry < maxRetries; retry++) {
+        try {
+            const response = await sendMessage(tabId, message);
+
+            if (response && !response.error) {
+                return response;
+            }
+
+            // 如果有错误但不是致命错误，记录并重试
+            if (response && response.error && response.error.includes('未加载')) {
+                lastError = response.error;
+                if (retry < maxRetries - 1) {
+                    await sleep(2000);
+                    continue;
+                }
+            }
+
+            return response;
+        } catch (error) {
+            lastError = error;
+            console.log(`消息发送尝试 ${retry + 1}/${maxRetries} 失败:`, error.message);
+
+            if (retry < maxRetries - 1) {
+                // 根据错误类型决定等待时间
+                if (error.message.includes('无法连接') || error.message.includes('响应超时')) {
+                    await sleep(3000); // 连接问题等待更久
+                } else {
+                    await sleep(1500);
+                }
+            }
+        }
+    }
+
+    throw lastError || new Error('消息发送失败');
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -646,15 +855,15 @@ function restoreState() {
             state.currentIndex = result.currentIndex || 0;
 
             // 恢复UI
-            elements.fileName.textContent = '(已恢复上次数据)';
-            elements.fileUpload.classList.add('has-file');
-            elements.totalProducts.textContent = state.products.length;
-            elements.productNav.classList.add('show');
+            if (elements.fileName) elements.fileName.textContent = '(已恢复上次数据)';
+            if (elements.fileUpload) elements.fileUpload.classList.add('has-file');
+            if (elements.totalProducts) elements.totalProducts.textContent = state.products.length;
+            if (elements.productNav) elements.productNav.classList.add('show');
 
             updateProductDisplay();
 
-            elements.startAutoUpload.disabled = false;
-            elements.fillCurrentPage.disabled = false;
+            if (elements.startAutoUpload) elements.startAutoUpload.disabled = false;
+            if (elements.fillCurrentPage) elements.fillCurrentPage.disabled = false;
 
             addLog('info', `已恢复 ${state.products.length} 个商品，当前第 ${state.currentIndex + 1} 个`);
         }

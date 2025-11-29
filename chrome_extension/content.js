@@ -33,14 +33,21 @@ function initialize() {
         console.warn('⚠️ AmazonNavigator未加载');
     }
 
-    if (typeof window.amazonFormFiller !== 'undefined') {
-        formFiller = window.amazonFormFiller;
+    if (typeof window.AmazonFormFiller !== 'undefined') {
+        formFiller = window.AmazonFormFiller;
         console.log('✓ AmazonFormFiller已加载');
     } else {
         console.warn('⚠️ AmazonFormFiller未加载');
     }
 
     console.log('[初始化] 完成');
+
+    // 调试信息
+    console.log('当前URL:', window.location.href);
+    if (pageDetector) {
+        const status = pageDetector.detectCurrentPage();
+        console.log('检测到的页面类型:', status);
+    }
 }
 
 // 延迟初始化，确保其他脚本已加载
@@ -122,150 +129,169 @@ function handleGetPageStatus(sendResponse) {
 /**
  * 搜索ASIN并进入表单
  */
-async function handleSearchASIN(asin, sendResponse) {
+function handleSearchASIN(asin, sendResponse) {
     if (!amazonNavigator) {
         sendResponse({ success: false, error: 'AmazonNavigator未加载' });
         return;
     }
 
-    try {
-        console.log(`\n[开始ASIN搜索] ${asin}`);
+    console.log(`\n[开始ASIN搜索] ${asin}`);
 
-        const result = await amazonNavigator.searchASINAndEnterForm(asin);
-
-        if (result.success) {
-            sendResponse({ success: true });
-        } else {
-            sendResponse({ success: false, error: result.error });
-        }
-
-    } catch (error) {
-        console.error('[ASIN搜索失败]', error);
-        sendResponse({ success: false, error: error.message });
-    }
+    // 使用Promise包装async操作，确保sendResponse总是被调用
+    amazonNavigator.searchASINAndEnterForm(asin)
+        .then(result => {
+            if (result && result.success) {
+                sendResponse({ success: true });
+            } else {
+                sendResponse({ success: false, error: result ? result.error : '搜索失败' });
+            }
+        })
+        .catch(error => {
+            console.error('[ASIN搜索失败]', error);
+            sendResponse({ success: false, error: error ? error.message : '搜索失败' });
+        });
 }
 
 /**
  * 填写指定页面
  */
-async function handleFillPage(page, product, settings, sendResponse) {
+function handleFillPage(page, product, settings, sendResponse) {
     if (!formFiller) {
         sendResponse({ success: false, error: 'FormFiller未加载' });
         return;
     }
 
-    try {
-        console.log(`\n[填写页面] ${page}`);
+    console.log(`\n[填写页面] ${page}`);
 
-        // 等待页面稳定
-        await sleep(1000);
+    // 异步操作封装
+    const fillPageAsync = async () => {
+        try {
+            // 等待页面稳定
+            await sleep(1000);
 
-        // 根据页面类型调用对应的填写方法
-        let result;
+            // 根据页面类型调用对应的填写方法
+            let result;
 
-        switch (page) {
-            case 'productDetails':
-                result = await formFiller.fillProductDetails(product, settings);
-                break;
+            switch (page) {
+                case 'productDetails':
+                    result = await formFiller.fillProductDetails(product, settings);
+                    break;
 
-            case 'safetyCompliance':
-                result = await formFiller.fillSafetyCompliance(product, settings);
-                break;
+                case 'safetyCompliance':
+                    result = await formFiller.fillSafetyCompliance(product, settings);
+                    break;
 
-            case 'offer':
-                result = await formFiller.fillOffer(product, settings);
-                break;
+                case 'offer':
+                    result = await formFiller.fillOffer(product, settings);
+                    break;
 
-            case 'images':
-                result = await formFiller.uploadImages(product, settings);
-                break;
+                case 'images':
+                    result = await formFiller.uploadImages(product, settings);
+                    break;
 
-            default:
-                // 通用填写（尝试智能匹配）
-                result = await formFiller.fillCurrentPage(product, settings);
+                default:
+                    // 通用填写（尝试智能匹配）
+                    result = await formFiller.fillCurrentPage(product, settings);
+            }
+
+            return result;
+        } catch (error) {
+            throw error;
         }
+    };
 
-        if (result && result.success) {
-            sendResponse({ success: true, filled: result.filled });
-        } else {
-            sendResponse({ success: false, error: result ? result.error : '填写失败' });
-        }
-
-    } catch (error) {
-        console.error('[页面填写失败]', error);
-        sendResponse({ success: false, error: error.message });
-    }
+    // 执行异步操作并确保sendResponse总是被调用
+    fillPageAsync()
+        .then(result => {
+            if (result && result.success) {
+                sendResponse({ success: true, filled: result.filled });
+            } else {
+                sendResponse({ success: false, error: result ? result.error : '填写失败' });
+            }
+        })
+        .catch(error => {
+            console.error('[页面填写失败]', error);
+            sendResponse({ success: false, error: error ? error.message : '填写失败' });
+        });
 }
 
 /**
  * 导航到指定页面
  */
-async function handleNavigateToPage(page, sendResponse) {
-    try {
-        console.log(`[导航到] ${page}`);
+function handleNavigateToPage(page, sendResponse) {
+    console.log(`[导航到] ${page}`);
 
-        // 页面对应的tab文本
-        const tabTexts = {
-            'productDetails': '产品详情',
-            'safetyCompliance': '安全与合规',
-            'offer': '报价',
-            'images': '图片'
-        };
+    const navigateAsync = async () => {
+        try {
+            // 页面对应的tab文本
+            const tabTexts = {
+                'productDetails': '产品详情',
+                'safetyCompliance': '安全与合规',
+                'offer': '报价',
+                'images': '图片'
+            };
 
-        const tabText = tabTexts[page];
-        if (!tabText) {
-            throw new Error(`未知页面类型: ${page}`);
+            const tabText = tabTexts[page];
+            if (!tabText) {
+                throw new Error(`未知页面类型: ${page}`);
+            }
+
+            // 查找并点击tab
+            const tab = findTabByText(tabText);
+
+            if (!tab) {
+                throw new Error(`未找到tab: ${tabText}`);
+            }
+
+            // 点击tab
+            tab.click();
+            console.log(`✓ 已点击tab: ${tabText}`);
+
+            // 等待页面加载
+            await sleep(1500);
+
+            // 设置预期页面
+            if (pageDetector) {
+                pageDetector.setExpectedPage(page);
+            }
+
+            return { success: true };
+        } catch (error) {
+            throw error;
         }
+    };
 
-        // 查找并点击tab
-        const tab = findTabByText(tabText);
-
-        if (!tab) {
-            throw new Error(`未找到tab: ${tabText}`);
-        }
-
-        // 点击tab
-        tab.click();
-        console.log(`✓ 已点击tab: ${tabText}`);
-
-        // 等待页面加载
-        await sleep(1500);
-
-        // 设置预期页面
-        if (pageDetector) {
-            pageDetector.setExpectedPage(page);
-        }
-
-        sendResponse({ success: true });
-
-    } catch (error) {
-        console.error('[导航失败]', error);
-        sendResponse({ success: false, error: error.message });
-    }
+    navigateAsync()
+        .then(() => {
+            sendResponse({ success: true });
+        })
+        .catch(error => {
+            console.error('[导航失败]', error);
+            sendResponse({ success: false, error: error ? error.message : '导航失败' });
+        });
 }
 
 /**
  * 旧版通用填写（兼容）
  */
-async function handleFillProduct(product, settings, sendResponse) {
+function handleFillProduct(product, settings, sendResponse) {
     if (!formFiller) {
         sendResponse({ success: false, error: 'FormFiller未加载' });
         return;
     }
 
-    try {
-        const result = await formFiller.fillCurrentPage(product, settings);
-
-        if (result.success) {
-            sendResponse({ success: true, filled: result.filled });
-        } else {
-            sendResponse({ success: false, error: result.error });
-        }
-
-    } catch (error) {
-        console.error('[填写失败]', error);
-        sendResponse({ success: false, error: error.message });
-    }
+    formFiller.fillCurrentPage(product, settings)
+        .then(result => {
+            if (result && result.success) {
+                sendResponse({ success: true, filled: result.filled });
+            } else {
+                sendResponse({ success: false, error: result ? result.error : '填写失败' });
+            }
+        })
+        .catch(error => {
+            console.error('[填写失败]', error);
+            sendResponse({ success: false, error: error ? error.message : '填写失败' });
+        });
 }
 
 /**
@@ -339,7 +365,7 @@ function findTabByText(text) {
     return findInShadowDOM((el) => {
         const text = el.textContent.trim();
         return (text === text || text.includes(text)) &&
-               (el.tagName === 'BUTTON' || el.tagName === 'A' || el.role === 'tab');
+            (el.tagName === 'BUTTON' || el.tagName === 'A' || el.role === 'tab');
     });
 }
 

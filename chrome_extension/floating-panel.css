@@ -1,0 +1,305 @@
+/* 亚马逊助手悬浮面板样式 - Premium Glass Theme */
+.ziniao-floating-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 340px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    border-radius: 20px;
+    z-index: 999999;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    color: #f8fafc;
+}
+
+/* 最小化状态 */
+.ziniao-floating-panel.minimized {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #6366f1 0%, #d946ef 100%);
+    box-shadow: 0 4px 24px rgba(99, 102, 241, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    animation: pulse-glow 3s infinite;
+}
+
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 0 12px rgba(99, 102, 241, 0);
+        transform: scale(1.05);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+        transform: scale(1);
+    }
+}
+
+/* 头部 */
+.ziniao-panel-header {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(217, 70, 239, 0.15) 100%);
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.ziniao-panel-title {
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ziniao-panel-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.ziniao-control-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #cbd5e1;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.ziniao-control-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+/* 内容区 */
+.ziniao-panel-content {
+    padding: 24px;
+}
+
+.ziniao-status-row {
+    margin-bottom: 20px;
+}
+
+.ziniao-label {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.ziniao-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 进度条 */
+.ziniao-progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 16px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.ziniao-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #d946ef);
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+    position: relative;
+}
+
+.ziniao-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* 按钮组 */
+.ziniao-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.ziniao-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ziniao-btn-pause {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.ziniao-btn-pause:hover {
+    background: rgba(251, 191, 36, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.ziniao-btn-stop {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.ziniao-btn-stop:hover {
+    background: rgba(248, 113, 113, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
+}
+
+/* 最小化图标 */
+.ziniao-minimized-icon {
+    display: none;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.ziniao-floating-panel.minimized .ziniao-minimized-icon {
+    display: flex;
+}
+
+.ziniao-floating-panel.minimized .ziniao-panel-header,
+.ziniao-floating-panel.minimized .ziniao-panel-content {
+    display: none;
+}
+
+/* 开发者控制台 */
+.ziniao-dev-console {
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+    display: none;
+    /* 默认隐藏 */
+}
+
+.ziniao-console-header {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #94a3b8;
+}
+
+.ziniao-console-body {
+    height: 150px;
+    overflow-y: auto;
+    padding: 8px;
+    color: #e2e8f0;
+}
+
+/* 自定义滚动条 */
+.ziniao-console-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ziniao-console-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.ziniao-console-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.ziniao-log-entry {
+    margin-bottom: 4px;
+    line-height: 1.4;
+    word-break: break-all;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding-bottom: 2px;
+}
+
+.ziniao-log-time {
+    color: #64748b;
+    margin-right: 6px;
+    font-size: 10px;
+}
+
+.ziniao-log-info {
+    color: #e2e8f0;
+}
+
+.ziniao-log-warn {
+    color: #fbbf24;
+}
+
+.ziniao-log-error {
+    color: #f87171;
+}
+
+.ziniao-log-success {
+    color: #4caf50;
+}
