@@ -349,65 +349,113 @@ async function handleFileSelect(event) {
 
 function readExcelFile(file) {
     return new Promise((resolve, reject) => {
-        // Set a timeout to prevent hanging
         const timeoutId = setTimeout(() => {
             reject(new Error('文件读取超时 (10秒)'));
         }, 10000);
 
-        const reader = new FileReader();
+        // 如果是CSV文件，使用智能编码检测
+        if (file.name.toLowerCase().endsWith('.csv')) {
+            console.log('[CSV] 开始智能编码检测...');
+            addLog('info', '🔍 检测 CSV 文件编码...');
 
-        reader.onload = (e) => {
-            clearTimeout(timeoutId);
-            try {
-                console.log('Binary read successful, parsing with XLSX...');
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                console.log('XLSX parse successful');
-                resolve(jsonData);
-            } catch (error) {
-                console.warn('XLSX binary parse failed:', error);
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                clearTimeout(timeoutId);
 
-                // Fallback for CSV with different encoding (e.g., GBK)
-                if (file.name.toLowerCase().endsWith('.csv')) {
-                    console.log('Trying Text read for CSV (GBK)...');
+                const buffer = e.target.result;
+                let csvText = '';
+                let detectedEncoding = 'unknown';
 
-                    const textReader = new FileReader();
+                // 尝试多种编码（按常用程度排序）
+                const encodings = ['utf-8', 'gbk', 'shift_jis', 'gb2312', 'big5'];
 
-                    textReader.onload = (e) => {
-                        try {
-                            console.log('Text read successful, parsing CSV...');
-                            const workbook = XLSX.read(e.target.result, { type: 'string' });
-                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                            console.log('CSV parse successful');
-                            resolve(jsonData);
-                        } catch (textError) {
-                            console.error('CSV text parse failed:', textError);
-                            reject(new Error('CSV解析失败，请尝试另存为标准UTF-8格式'));
+                for (const encoding of encodings) {
+                    try {
+                        console.log(`[CSV] 尝试编码: ${encoding}`);
+                        const decoder = new TextDecoder(encoding, { fatal: true });
+                        const text = decoder.decode(buffer);
+
+                        // 验证解码结果：检查是否包含乱码字符
+                        const hasGarbage = /[\uFFFD\u0000-\u0008\u000B-\u000C\u000E-\u001F]/.test(text);
+                        if (!hasGarbage && text.length > 0) {
+                            csvText = text;
+                            detectedEncoding = encoding;
+                            console.log(`[CSV] ✓ 编码检测成功: ${encoding}`);
+                            addLog('success', `✓ 检测到编码: ${encoding.toUpperCase()}`);
+                            break;
                         }
-                    };
+                    } catch (e) {
+                        console.log(`[CSV] ${encoding} 解码失败:`, e.message);
+                    }
+                }
 
-                    textReader.onerror = () => {
-                        console.error('Text reader error');
-                        reject(new Error('CSV文本读取失败'));
-                    };
+                // 如果所有严格模式都失败，使用 UTF-8 非严格模式
+                if (!csvText) {
+                    console.log('[CSV] 所有编码尝试失败，使用 UTF-8 fallback');
+                    addLog('warning', '⚠️ 无法确定编码，使用 UTF-8 (可能有乱码)');
+                    const decoder = new TextDecoder('utf-8');
+                    csvText = decoder.decode(buffer);
+                    detectedEncoding = 'utf-8 (fallback)';
+                }
 
-                    textReader.readAsText(file, 'GBK'); // Try GBK for Chinese users
-                } else {
+                console.log(`[CSV] 最终编码: ${detectedEncoding}`);
+                console.log(`[CSV] 内容预览: ${csvText.substring(0, 100)}`);
+
+                // 使用 XLSX 解析 CSV 文本
+                try {
+                    const workbook = XLSX.read(csvText, { type: 'string' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    console.log('[CSV] 解析成功，数据行数:', jsonData.length);
+
+                    // 显示第一行数据预览
+                    if (jsonData.length > 0) {
+                        console.log('[CSV] 第一行数据:', jsonData[0]);
+                        const firstRowKeys = Object.keys(jsonData[0]).slice(0, 3).join(', ');
+                        addLog('info', `📊 数据列: ${firstRowKeys}...`);
+                    }
+
+                    resolve(jsonData);
+                } catch (error) {
+                    console.error('[CSV] XLSX解析失败:', error);
+                    reject(new Error('CSV解析失败: ' + error.message));
+                }
+            };
+
+            reader.onerror = () => {
+                clearTimeout(timeoutId);
+                reject(new Error('CSV文件读取失败'));
+            };
+
+            reader.readAsArrayBuffer(file);
+
+        } else {
+            // Excel 文件使用原有逻辑
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                clearTimeout(timeoutId);
+                try {
+                    console.log('Binary read successful, parsing with XLSX...');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    console.log('XLSX parse successful');
+                    resolve(jsonData);
+                } catch (error) {
+                    console.warn('XLSX binary parse failed:', error);
                     reject(error);
                 }
-            }
-        };
+            };
 
-        reader.onerror = () => {
-            clearTimeout(timeoutId);
-            reject(new Error('文件读取失败'));
-        };
+            reader.onerror = () => {
+                clearTimeout(timeoutId);
+                reject(new Error('文件读取失败'));
+            };
 
-        console.log('Starting binary read...');
-        reader.readAsArrayBuffer(file);
+            console.log('Starting binary read...');
+            reader.readAsArrayBuffer(file);
+        }
     });
 }
 

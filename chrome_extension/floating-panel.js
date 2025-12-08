@@ -412,11 +412,25 @@ class FloatingPanel {
     async togglePause(e) {
         if (e) e.stopPropagation();
         this.state.isPaused = !this.state.isPaused;
+
+        // 添加明显的日志
+        if (this.state.isPaused) {
+            console.log('🔴 [暂停功能] 用户点击暂停按钮');
+            console.log('🔴 [暂停功能] isPaused 状态:', this.state.isPaused);
+            console.log('🔴 [暂停功能] 工作流将在当前操作完成后停止');
+        } else {
+            console.log('🟢 [继续功能] 用户点击继续按钮');
+            console.log('🟢 [继续功能] isPaused 状态:', this.state.isPaused);
+            console.log('🟢 [继续功能] 工作流将继续执行');
+        }
+
         this.updateUI();
 
         await chrome.storage.local.set({
             workflowStatus: this.state.isPaused ? 'paused' : 'running'
         });
+
+        console.log('💾 [存储] workflowStatus 已更新为:', this.state.isPaused ? 'paused' : 'running');
 
         if (!this.state.isPaused) {
             this.resumeWorkflow();
@@ -425,10 +439,19 @@ class FloatingPanel {
 
     async stopExecution(e) {
         if (e) e.stopPropagation();
+
+        console.log('⏹️ [停止功能] 用户点击停止按钮');
+        console.log('⏹️ [停止功能] 正在停止工作流...');
+
         this.state.isRunning = false;
-        await chrome.storage.local.set({ workflowStatus: 'idle' });
+
+        await chrome.storage.local.set({ workflowStatus: 'stopped' });
+        console.log('💾 [存储] workflowStatus 已更新为: stopped');
+
         this.panel.remove();
         this.panel = null;
+
+        console.log('✅ [停止功能] 悬浮面板已关闭');
     }
 
     async skipProduct(e) {
@@ -540,6 +563,12 @@ class FloatingPanel {
     }
 
     async executeNavigation() {
+        // 检查暂停状态
+        if (this.state.isPaused) {
+            console.log('[工作流] 已暂停，停止导航');
+            return;
+        }
+
         if (!this.state.currentProduct) return;
 
         // 调用 AmazonNavigator
@@ -555,6 +584,12 @@ class FloatingPanel {
     }
 
     async fillCurrentPage() {
+        // 检查暂停状态
+        if (this.state.isPaused) {
+            console.log('[工作流] 已暂停，停止填写');
+            return;
+        }
+
         if (!this.state.currentProduct) return;
 
         // 1. 检测当前页面类型
@@ -581,6 +616,12 @@ class FloatingPanel {
                 // 标记当前页面为已填写
                 this.state.filledPages.add(currentPage);
 
+                // 再次检查暂停状态（填写过程中可能被暂停）
+                if (this.state.isPaused) {
+                    console.log('[工作流] 填写完成后检测到暂停，停止自动翻页');
+                    return;
+                }
+
                 // 检查是否开启自动翻页
                 const storage = await chrome.storage.local.get(['settings']);
                 const autoNavigate = storage.settings?.autoNavigate !== false; // 默认开启
@@ -599,6 +640,7 @@ class FloatingPanel {
             throw new Error('AmazonFormFiller未加载');
         }
     }
+
 
     detectAvailableTabs() {
         // 定义页面顺序
@@ -641,12 +683,17 @@ class FloatingPanel {
     }
 
     async switchToNextPage() {
-        // 找出下一个未填写的页面
+        // 检查暂停状态
+        if (this.state.isPaused) {
+            console.log('[工作流] 已暂停，停止切换页面');
+            return;
+        }
+
+        // 找到下一个未填写的页面
         const nextPage = this.state.availablePages.find(page => !this.state.filledPages.has(page));
 
         if (nextPage) {
-            this.updateStatus(`准备切换到: ${nextPage}`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 稍作停顿
+            this.updateStatus(`正在切换到 ${nextPage}...`);
 
             // 查找并点击Tab
             const success = await this.clickTabForPage(nextPage);
@@ -662,6 +709,13 @@ class FloatingPanel {
             // 所有页面都填完了
             this.updateStatus('当前商品所有页面已完成！');
             await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 再次检查暂停状态
+            if (this.state.isPaused) {
+                console.log('[工作流] 已暂停，不切换商品');
+                return;
+            }
+
             // 切换到下一个商品
             this.skipProduct();
         }

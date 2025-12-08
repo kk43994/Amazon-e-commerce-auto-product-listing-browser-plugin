@@ -1,0 +1,705 @@
+{
+  "attributes": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Attributes"
+      ],
+      "name": "attribute_filter_radio_buttons-required"
+    }
+  },
+  "copy_from_existing_product": {
+    "type": "textbox",
+    "fallback": {
+      "labels": [
+        "Copy from existing product"
+      ],
+      "placeholder": "Search for SKU, ASIN or product name"
+    }
+  },
+  "product_type": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Product Type"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_name": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Name"
+      ],
+      "name": "undefined"
+    }
+  },
+  "brand_name": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Brand Name"
+      ],
+      "name": "undefined"
+    }
+  },
+  "external_product_id": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "External Product ID"
+      ],
+      "name": "undefined"
+    }
+  },
+  "recommended_browse_nodes": {
+    "type": "textbox",
+    "fallback": {
+      "labels": [
+        "Recommended Browse Nodes"
+      ],
+      "placeholder": "ダイエットバー"
+    }
+  },
+  "model_number": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Model Number"
+      ],
+      "name": "undefined"
+    }
+  },
+  "model_name": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Model Name"
+      ],
+      "name": "undefined"
+    }
+  },
+  "manufacturer": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Manufacturer"
+      ],
+      "name": "undefined"
+    }
+  },
+  "product_description": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Product Description"
+      ],
+      "name": "undefined"
+    }
+  },
+  "bullet_point": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Bullet Point"
+      ],
+      "name": "undefined"
+    }
+  },
+  "generic_keyword": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Generic Keyword"
+      ],
+      "name": "undefined"
+    }
+  },
+  "material": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Material"
+      ],
+      "name": "undefined"
+    }
+  },
+  "number_of_items": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Number of Items"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_package_quantity": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Package Quantity"
+      ],
+      "name": "undefined"
+    }
+  },
+  "color": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Color"
+      ],
+      "name": "undefined"
+    }
+  },
+  "size": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Size"
+      ],
+      "name": "undefined"
+    }
+  },
+  "part_number": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Part Number"
+      ],
+      "name": "undefined"
+    }
+  },
+  "care_instructions": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Care Instructions"
+      ],
+      "name": "undefined"
+    }
+  },
+  "distribution_designation": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Distribution Designation"
+      ],
+      "name": "undefined"
+    }
+  },
+  "is_exclusive_product": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Is Exclusive Product"
+      ],
+      "name": "undefined"
+    }
+  },
+  "capacity": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Capacity"
+      ],
+      "name": "undefined"
+    }
+  },
+  "capacity_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Capacity Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "finish_type": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Finish Type"
+      ],
+      "name": "undefined"
+    }
+  },
+  "base_type": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Base Type"
+      ],
+      "name": "undefined"
+    }
+  },
+  "product_site_launch_date": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Product Site Launch Date"
+      ],
+      "name": "undefined"
+    }
+  },
+  "included_components": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Included Components"
+      ],
+      "name": "undefined"
+    }
+  },
+  "league_name": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "League Name"
+      ],
+      "name": "undefined"
+    }
+  },
+  "team_name": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Team Name"
+      ],
+      "name": "undefined"
+    }
+  },
+  "coating_description": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Coating Description"
+      ],
+      "name": "undefined"
+    }
+  },
+  "is_oven_safe": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Is Oven Safe"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_dimensions_d_x_w_x_h": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Dimensions D x W x H"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_depth_front_to_back": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Depth Front To Back"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_depth_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Depth Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_height_base_to_top": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Height Base to Top"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_height_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Height Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_width_side_to_side": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Width Side to Side"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_width_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Width Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "manufacture_year": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Manufacture Year"
+      ],
+      "name": "undefined"
+    }
+  },
+  "number_of_packs": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Number of Packs"
+      ],
+      "name": "undefined"
+    }
+  },
+  "minimum_advertised_price": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Minimum Advertised Price"
+      ],
+      "name": "undefined"
+    }
+  },
+  "jpy": {
+    "type": "textbox",
+    "fallback": {
+      "labels": [
+        "JPY¥"
+      ],
+      "name": "list_price-0-value",
+      "placeholder": "Example: 1950"
+    }
+  },
+  "your_price": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Your Price"
+      ],
+      "name": "undefined"
+    }
+  },
+  "automated_pricing": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Automated Pricing"
+      ],
+      "name": "undefined"
+    }
+  },
+  "minimum_seller_allowed_price": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Minimum Seller Allowed Price"
+      ],
+      "name": "undefined"
+    }
+  },
+  "maximum_seller_allowed_price": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Maximum Seller Allowed Price"
+      ],
+      "name": "undefined"
+    }
+  },
+  "sale_price": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Sale Price"
+      ],
+      "name": "undefined"
+    }
+  },
+  "sale_start_date": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Sale Start Date"
+      ],
+      "name": "undefined"
+    }
+  },
+  "sale_end_date": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Sale End Date"
+      ],
+      "name": "undefined"
+    }
+  },
+  "offering_release_date": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Offering Release Date"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_condition": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Condition"
+      ],
+      "name": "undefined"
+    }
+  },
+  "list_price_including_tax": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "List Price including tax"
+      ],
+      "name": "undefined"
+    }
+  },
+  "fulfillment_channel": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Fulfillment Channel"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_package_dimensions": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Package Dimensions"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_package_length": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Package Length"
+      ],
+      "name": "undefined"
+    }
+  },
+  "package_length_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Package Length Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_package_width": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Package Width"
+      ],
+      "name": "undefined"
+    }
+  },
+  "package_width_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Package Width Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_package_height": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Package Height"
+      ],
+      "name": "undefined"
+    }
+  },
+  "package_height_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Package Height Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "package_weight": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Package Weight"
+      ],
+      "name": "undefined"
+    }
+  },
+  "package_weight_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Package Weight Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "countryregion_of_origin": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Country/Region of Origin"
+      ],
+      "name": "undefined"
+    }
+  },
+  "dangerous_goods_regulations": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Dangerous Goods Regulations"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_weight": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Weight"
+      ],
+      "name": "undefined"
+    }
+  },
+  "item_weight_unit": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Item Weight Unit"
+      ],
+      "name": "undefined"
+    }
+  },
+  "required": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Required"
+      ],
+      "name": "attribute_filter_radio_buttons-required"
+    }
+  },
+  "recommended": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Recommended"
+      ],
+      "name": "attribute_filter_radio_buttons-recommended"
+    }
+  },
+  "all_attributes": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "All attributes"
+      ],
+      "name": "attribute_filter_radio_buttons-all"
+    }
+  },
+  "irrelevant_attribute": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Irrelevant attribute"
+      ],
+      "name": "undefined"
+    }
+  },
+  "value_missing_in_the_dropdown": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Value missing in the dropdown"
+      ],
+      "name": "undefined"
+    }
+  },
+  "yes": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Yes"
+      ],
+      "name": "is_oven_safe-0-value"
+    }
+  },
+  "no": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "No"
+      ],
+      "name": "is_oven_safe-0-value"
+    }
+  },
+  "i_will_ship_this_item_myself": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "I will ship this item myself"
+      ],
+      "name": "offerFulfillment"
+    }
+  },
+  "merchant_fulfilled": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "(Merchant Fulfilled)"
+      ],
+      "name": "offerFulfillment"
+    }
+  },
+  "amazon_will_ship_and_provide_customer_service": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "Amazon will ship and provide customer service"
+      ],
+      "name": "offerFulfillment"
+    }
+  },
+  "fulfilled_by_amazon": {
+    "type": "radio",
+    "fallback": {
+      "labels": [
+        "(Fulfilled by Amazon)"
+      ],
+      "name": "offerFulfillment"
+    }
+  }
+}

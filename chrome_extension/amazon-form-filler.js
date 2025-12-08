@@ -16,23 +16,30 @@ const AMAZON_FIELDS = {
             type: 'textbox',
             multiline: true,
             fallback: {
-                name: 'item_name',
-                labels: ['商品名称', '商品名', 'Product Name']
+                name: 'item_name-0-value',
+                labels: ['商品名称', '商品名', 'Item Name', 'Product Name']
             }
         },
         brand: {
             uid: '46_42',
             type: 'textbox',
             fallback: {
-                name: 'brand_name',
+                name: 'brand-0-value',
                 labels: ['品牌名', 'ブランド名', 'Brand Name']
+            }
+        },
+        productIdType: {
+            type: 'dropdown',
+            fallback: {
+                name: 'externally_assigned_product_identifier-0-type',
+                labels: ['External Product ID']
             }
         },
         productId: {
             uid: '46_48',
             type: 'textbox',
             fallback: {
-                name: 'external_product_id',
+                name: 'externally_assigned_product_identifier-0-value',
                 labels: ['外部产品 ID', '外部产品ID', '製品コード', 'External Product ID']
             }
         },
@@ -40,15 +47,15 @@ const AMAZON_FIELDS = {
             uid: '46_71',
             type: 'textbox',
             fallback: {
-                name: 'model_name',
-                labels: ['型号', 'モデル名', 'Model Name']
+                name: 'model_number-0-value',
+                labels: ['型号', 'モデル名', 'Model Number', 'Model Name']
             }
         },
         manufacturer: {
             uid: '46_75',
             type: 'textbox',
             fallback: {
-                name: 'manufacturer',
+                name: 'manufacturer-0-value',
                 labels: ['制造商', 'メーカー名', 'Manufacturer']
             }
         },
@@ -57,7 +64,7 @@ const AMAZON_FIELDS = {
             type: 'textbox',
             multiline: true,
             fallback: {
-                name: 'product_description',
+                name: 'product_description-0-value',
                 labels: ['产品描述', '商品説明', 'Product Description']
             }
         },
@@ -65,52 +72,52 @@ const AMAZON_FIELDS = {
             uid: '46_83',
             type: 'textbox',
             multiline: true,
-            fallback: { labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features'], index: 0 }
+            fallback: { name: 'bullet_point-0-value', labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features', 'Bullet Point'], index: 0 }
         },
-        bulletPoint2: { uid: '46_84', type: 'textbox', multiline: true, fallback: { labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features'], index: 1 } },
-        bulletPoint3: { uid: '46_85', type: 'textbox', multiline: true, fallback: { labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features'], index: 2 } },
-        bulletPoint4: { uid: '46_86', type: 'textbox', multiline: true, fallback: { labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features'], index: 3 } },
-        bulletPoint5: { uid: '46_87', type: 'textbox', multiline: true, fallback: { labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features'], index: 4 } },
+        bulletPoint2: { uid: '46_84', type: 'textbox', multiline: true, fallback: { name: 'bullet_point-1-value', labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features', 'Bullet Point'], index: 1 } },
+        bulletPoint3: { uid: '46_85', type: 'textbox', multiline: true, fallback: { name: 'bullet_point-2-value', labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features', 'Bullet Point'], index: 2 } },
+        bulletPoint4: { uid: '46_86', type: 'textbox', multiline: true, fallback: { name: 'bullet_point-3-value', labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features', 'Bullet Point'], index: 3 } },
+        bulletPoint5: { uid: '46_87', type: 'textbox', multiline: true, fallback: { name: 'bullet_point-4-value', labels: ['要点', '商品的规格和功能', '商品の仕様', 'Key Product Features', 'Bullet Point'], index: 4 } },
         searchKeywords: {
             uid: '46_94',
             type: 'textbox',
-            fallback: { labels: ['搜索关键字', '搜索关键词', '検索キーワード', 'Search Terms'] }
+            fallback: { name: 'generic_keyword-0-value', labels: ['搜索关键字', '搜索关键词', '検索キーワード', 'Search Terms', 'Generic Keyword'] }
         },
         releaseDate: { uid: '46_214', type: 'textbox', format: 'date', fallback: { labels: ['提供发布日期', 'Release Date'] } },
-        websiteReleaseDate: { uid: '46_218', type: 'textbox', format: 'date', fallback: { labels: ['产品网站发布日期', 'Website Release Date'] } },
+        websiteReleaseDate: { uid: '46_218', type: 'textbox', format: 'date', fallback: { name: 'product_site_launch_date-0-value', labels: ['产品网站发布日期', 'Product Site Launch Date', 'Website Release Date'] } },
         // 新增字段
-        material: { type: 'textbox', fallback: { labels: ['材料', 'Material'] } },
-        color: { type: 'textbox', fallback: { labels: ['颜色', 'Color'] } },
-        size: { type: 'textbox', fallback: { labels: ['尺码', 'Size'] } },
-        partNumber: { type: 'textbox', fallback: { labels: ['零件编号', 'Part Number'] } },
-        itemPackageQuantity: { type: 'textbox', fallback: { labels: ['产品数量', 'Item Package Quantity'] } },
-        numberOfItems: { type: 'textbox', fallback: { labels: ['成套产品数量', 'Number of Items'] } },
-        includedComponents: { type: 'textbox', fallback: { labels: ['所包含组件', 'Included Components'] } },
+        material: { type: 'textbox', fallback: { name: 'material-0-value', labels: ['材料', 'Material'] } },
+        color: { type: 'textbox', fallback: { name: 'color-0-value', labels: ['颜色', 'Color'] } },
+        size: { type: 'textbox', fallback: { name: 'size-0-value', labels: ['尺码', 'Size'] } },
+        partNumber: { type: 'textbox', fallback: { name: 'part_number-0-value', labels: ['零件编号', 'Part Number'] } },
+        itemPackageQuantity: { type: 'textbox', fallback: { name: 'item_package_quantity-0-value', labels: ['产品数量', 'Item Package Quantity'] } },
+        numberOfItems: { type: 'textbox', fallback: { name: 'number_of_items-0-value', labels: ['成套产品数量', 'Number of Items'] } },
+        includedComponents: { type: 'textbox', fallback: { name: 'included_components-0-value', labels: ['所包含组件', 'Included Components'] } },
         style: { type: 'textbox', fallback: { labels: ['风格', 'Style'] } },
         targetAudience: { type: 'textbox', fallback: { labels: ['目标受众', 'Target Audience'] } },
         // 更多属性 (基于日志)
         recommendedBrowseNodes: { type: 'textbox', fallback: { labels: ['推荐浏览节点', 'Recommended Browse Nodes'] } },
-        careInstructions: { type: 'textbox', fallback: { labels: ['保养说明', 'Care Instructions'] } },
-        capacity: { type: 'textbox', fallback: { labels: ['容量', 'Capacity'] } },
+        careInstructions: { type: 'textbox', fallback: { name: 'care_instructions-0-value', labels: ['保养说明', 'Care Instructions'] } },
+        capacity: { type: 'textbox', fallback: { name: 'capacity-0-value', labels: ['容量', 'Capacity'] } },
         capacityUnit: { type: 'dropdown', fallback: { labels: ['容量单位', 'Capacity Unit'] } },
-        finishType: { type: 'textbox', fallback: { labels: ['抛光类型', 'Finish Type'] } },
-        baseType: { type: 'textbox', fallback: { labels: ['底座类型', 'Base Type'] } },
-        manufactureYear: { type: 'textbox', fallback: { labels: ['制造年份', 'Manufacture Year'] } },
+        finishType: { type: 'textbox', fallback: { name: 'finish_type-0-value', labels: ['抛光类型', 'Finish Type'] } },
+        baseType: { type: 'textbox', fallback: { name: 'base_type-0-value', labels: ['底座类型', 'Base Type'] } },
+        manufactureYear: { type: 'textbox', fallback: { name: 'manufacture_year-0-value', labels: ['制造年份', 'Manufacture Year'] } },
 
         // 尺寸与重量 - 商品
-        itemDepth: { type: 'textbox', fallback: { labels: ['商品从前到后的深度', 'Item Depth', 'Item Length'] } },
-        itemHeight: { type: 'textbox', fallback: { labels: ['商品从底部到顶部的高度', 'Item Height'] } },
-        itemWidth: { type: 'textbox', fallback: { labels: ['商品左右宽度', 'Item Width'] } },
+        itemDepth: { type: 'textbox', fallback: { name: 'item_depth_width_height-0-depth-value', labels: ['商品从前到后的深度', 'Item Depth', 'Item Length'] } },
+        itemHeight: { type: 'textbox', fallback: { name: 'item_depth_width_height-0-height-value', labels: ['商品从底部到顶部的高度', 'Item Height'] } },
+        itemWidth: { type: 'textbox', fallback: { name: 'item_depth_width_height-0-width-value', labels: ['商品左右宽度', 'Item Width'] } },
         itemDimensionUnit: { type: 'dropdown', fallback: { labels: ['商品深度单位', '商品高度单位', '商品宽度单位', 'Item Dimensions Unit'] } }, // 简化处理，通常单位是一致的
-        itemWeight: { type: 'textbox', fallback: { labels: ['商品重量', 'Item Weight'] } },
+        itemWeight: { type: 'textbox', fallback: { name: 'item_weight-0-value', labels: ['商品重量', 'Item Weight'] } },
         itemWeightUnit: { type: 'dropdown', fallback: { labels: ['商品重量单位', 'Item Weight Unit'] } },
 
         // 尺寸与重量 - 包装
-        packageDepth: { type: 'textbox', fallback: { labels: ['包装长度', 'Package Length'] } },
-        packageHeight: { type: 'textbox', fallback: { labels: ['包装高度', 'Package Height'] } },
-        packageWidth: { type: 'textbox', fallback: { labels: ['包装宽度', 'Package Width'] } },
+        packageDepth: { type: 'textbox', fallback: { name: 'item_package_dimensions-0-length-value', labels: ['包装长度', 'Package Length'] } },
+        packageHeight: { type: 'textbox', fallback: { name: 'item_package_dimensions-0-height-value', labels: ['包装高度', 'Package Height'] } },
+        packageWidth: { type: 'textbox', fallback: { name: 'item_package_dimensions-0-width-value', labels: ['包装宽度', 'Package Width'] } },
         packageDimensionUnit: { type: 'dropdown', fallback: { labels: ['包装长度单位', '包装高度单位', '包装宽度单位', 'Package Dimensions Unit'] } },
-        packageWeight: { type: 'textbox', fallback: { labels: ['包装重量', '包裹重量', 'Package Weight'] } },
+        packageWeight: { type: 'textbox', fallback: { name: 'item_package_weight-0-value', labels: ['包装重量', '包裹重量', 'Package Weight'] } },
         packageWeightUnit: { type: 'dropdown', fallback: { labels: ['包装重量单位', 'Package Weight Unit'] } }
     },
 
@@ -198,7 +205,7 @@ const AMAZON_FIELDS = {
 
 // Excel字段到Amazon字段的映射
 const EXCEL_TO_AMAZON_MAPPING = {
-    // 产品详情
+    // 产品详情 - 基础字段（旧模板）
     'title': 'productDetails.title',
     'brand': 'productDetails.brand',
     'product_id': 'productDetails.productId',
@@ -213,6 +220,17 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'search_keywords': 'productDetails.searchKeywords',
     'release_date': 'productDetails.releaseDate',
     'website_release_date': 'productDetails.websiteReleaseDate',
+
+    // 产品详情 - 基础字段（新模板）
+    'item_name': 'productDetails.title',
+    'brand_name': 'productDetails.brand',
+    'external_product_id_type': 'productDetails.productIdType',
+    'external_product_id': 'productDetails.productId',
+    'model_number': 'productDetails.model',
+    'model_name': 'productDetails.model',
+    'product_description': 'productDetails.description',
+    'generic_keyword': 'productDetails.searchKeywords',
+    'product_site_launch_date': 'productDetails.websiteReleaseDate',
     // 新增映射
     'material': 'productDetails.material',
     'color': 'productDetails.color',
@@ -231,7 +249,7 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'base_type': 'productDetails.baseType',
     'manufacture_year': 'productDetails.manufactureYear',
 
-    // 尺寸重量
+    // 尺寸重量（旧模板）
     'item_length': 'productDetails.itemDepth',
     'item_width': 'productDetails.itemWidth',
     'item_height': 'productDetails.itemHeight',
@@ -244,6 +262,14 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'package_dimension_unit': 'productDetails.packageDimensionUnit',
     'package_weight': 'productDetails.packageWeight',
     'package_weight_unit': 'productDetails.packageWeightUnit',
+
+    // 尺寸重量（新模板）
+    'item_depth_front_to_back': 'productDetails.itemDepth',
+    'item_depth_unit': 'productDetails.itemDimensionUnit',
+    'item_height_base_to_top': 'productDetails.itemHeight',
+    'item_height_unit': 'productDetails.itemDimensionUnit',
+    'item_width_side_to_side': 'productDetails.itemWidth',
+    'item_width_unit': 'productDetails.itemDimensionUnit',
 
     // 安全与合规
     'country_of_origin': 'safetyCompliance.countryOfOrigin',
@@ -427,22 +453,23 @@ async function fillProductDetailsPage(data, options) {
     await switchToAllAttributesView();
     await sleep(1000);
 
-    // 按顺序填写字段
+    // 按顺序填写字段（支持新旧字段名）
     const fields = [
-        { key: 'title', value: data.title },
-        { key: 'brand', value: data.brand },
-        { key: 'product_id', value: data.product_id },
-        { key: 'model', value: data.model },
+        { key: 'title', value: data.item_name || data.title },
+        { key: 'brand', value: data.brand_name || data.brand },
+        { key: 'external_product_id_type', value: data.external_product_id_type },
+        { key: 'product_id', value: data.external_product_id || data.product_id },
+        { key: 'model', value: data.model_number || data.model_name || data.model },
         { key: 'manufacturer', value: data.manufacturer },
-        { key: 'description', value: data.description },
+        { key: 'description', value: data.product_description || data.description },
         { key: 'bullet_point_1', value: data.bullet_point_1 },
         { key: 'bullet_point_2', value: data.bullet_point_2 },
         { key: 'bullet_point_3', value: data.bullet_point_3 },
         { key: 'bullet_point_4', value: data.bullet_point_4 },
         { key: 'bullet_point_5', value: data.bullet_point_5 },
-        { key: 'search_keywords', value: data.search_keywords },
+        { key: 'search_keywords', value: data.generic_keyword || data.search_keywords },
         { key: 'release_date', value: data.release_date },
-        { key: 'website_release_date', value: data.website_release_date },
+        { key: 'website_release_date', value: data.product_site_launch_date || data.website_release_date },
         // 新增字段
         { key: 'material', value: data.material },
         { key: 'color', value: data.color },
@@ -460,10 +487,10 @@ async function fillProductDetailsPage(data, options) {
         { key: 'finish_type', value: data.finish_type },
         { key: 'base_type', value: data.base_type },
         { key: 'manufacture_year', value: data.manufacture_year },
-        { key: 'item_length', value: data.item_length },
-        { key: 'item_width', value: data.item_width },
-        { key: 'item_height', value: data.item_height },
-        { key: 'item_dimension_unit', value: data.item_dimension_unit },
+        { key: 'item_length', value: data.item_depth_front_to_back || data.item_length },
+        { key: 'item_width', value: data.item_width_side_to_side || data.item_width },
+        { key: 'item_height', value: data.item_height_base_to_top || data.item_height },
+        { key: 'item_dimension_unit', value: data.item_depth_unit || data.item_height_unit || data.item_width_unit || data.item_dimension_unit },
         { key: 'item_weight', value: data.item_weight },
         { key: 'item_weight_unit', value: data.item_weight_unit },
         { key: 'package_length', value: data.package_length },
@@ -475,6 +502,17 @@ async function fillProductDetailsPage(data, options) {
     ];
 
     for (const field of fields) {
+        // 检查是否暂停
+        const { workflowStatus } = await chrome.storage.local.get(['workflowStatus']);
+        if (workflowStatus === 'paused') {
+            console.log('🔴 [暂停检查] 检测到暂停状态，停止填写');
+            throw new Error('用户暂停了工作流');
+        }
+        if (workflowStatus === 'stopped') {
+            console.log('⛔ [停止检查] 检测到停止状态，终止填写');
+            throw new Error('用户停止了工作流');
+        }
+
         if (field.value) {
             const amazonPath = EXCEL_TO_AMAZON_MAPPING[field.key];
             if (amazonPath) {
@@ -513,6 +551,17 @@ async function fillSafetyCompliancePage(data, options) {
     ];
 
     for (const field of fields) {
+        // 检查是否暂停
+        const { workflowStatus } = await chrome.storage.local.get(['workflowStatus']);
+        if (workflowStatus === 'paused') {
+            console.log('🔴 [暂停检查] 检测到暂停状态，停止填写');
+            throw new Error('用户暂停了工作流');
+        }
+        if (workflowStatus === 'stopped') {
+            console.log('⛔ [停止检查] 检测到停止状态，终止填写');
+            throw new Error('用户停止了工作流');
+        }
+
         if (field.value) {
             const amazonPath = EXCEL_TO_AMAZON_MAPPING[field.key];
             if (amazonPath) {
@@ -553,6 +602,17 @@ async function fillOfferPage(data, options) {
     ];
 
     for (const field of fields) {
+        // 检查是否暂停
+        const { workflowStatus } = await chrome.storage.local.get(['workflowStatus']);
+        if (workflowStatus === 'paused') {
+            console.log('🔴 [暂停检查] 检测到暂停状态，停止填写');
+            throw new Error('用户暂停了工作流');
+        }
+        if (workflowStatus === 'stopped') {
+            console.log('⛔ [停止检查] 检测到停止状态，终止填写');
+            throw new Error('用户停止了工作流');
+        }
+
         if (field.value) {
             const amazonPath = EXCEL_TO_AMAZON_MAPPING[field.key];
             if (amazonPath) {
