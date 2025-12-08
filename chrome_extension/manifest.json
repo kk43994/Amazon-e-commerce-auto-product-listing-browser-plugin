@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "亚马逊商品快速上传助手",
   "name_en": "Amazon Product Quick Upload",
-  "version": "5.0",
+  "version": "6.0",
   "description": "从Excel导入商品数据，一键自动填写亚马逊商品上传表单。支持批量处理、真人行为模拟、智能字段匹配。",
   "description_en": "Import product data from Excel and auto-fill Amazon product upload forms. Supports batch processing, human-like behavior simulation, and smart field matching.",
   "permissions": [

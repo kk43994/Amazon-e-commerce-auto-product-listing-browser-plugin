@@ -261,8 +261,45 @@ async function handleFileSelect(event) {
 
         // 步骤2: 读取文件
         addLog('info', '⏳ 步骤2/5: 读取文件内容...');
-        const products = await readExcelFile(file);
+        let products = await readExcelFile(file);
         addLog('success', `✓ 文件读取成功，共 ${products.length} 行数据`);
+
+        // 步骤2.5: 处理多行变种数据
+        // 逻辑：如果有相同的 item_name (或 ASIN)，则视为变种行，合并到第一个父商品中
+        const groupedProducts = [];
+        let currentProduct = null;
+
+        products.forEach((row, index) => {
+            // 简单的归组逻辑：检查 title/asin 是否与上一个相同，或者如果是空行但有变种属性
+            // 这里假设: 
+            // 1. 相同 item_name / asin 的行属于同一个商品
+            // 2. 如果 item_name 为空但前面有商品，可能也是变种（视具体CSV而定，这里先严格按标识符）
+
+            const id = row.asin || row.item_name || row.external_product_id;
+            if (!id) return; // 跳过无效行
+
+            if (currentProduct &&
+                ((row.asin && row.asin === currentProduct.asin) ||
+                    (row.item_name && row.item_name === currentProduct.item_name))) {
+                // 属于同一个商品，添加到 variations 数组
+                if (!currentProduct.variations) {
+                    currentProduct.variations = [currentProduct]; // 把自己作为第一个变种
+                }
+                currentProduct.variations.push(row);
+                // 也可以考虑合并一些字段，例如图片可能是分开的？目前假设父行有完整主信息
+            } else {
+                // 新商品
+                currentProduct = { ...row };
+                // 默认初始化 variations 包含自己，方便统一处理
+                // 如果只有一行，variations就是 [self]
+                currentProduct.variations = [row];
+                groupedProducts.push(currentProduct);
+            }
+        });
+
+        const originalCount = products.length;
+        products = groupedProducts; // 替换为分组后的数据
+        addLog('info', `📋 检测到多行变种：从 ${originalCount} 行合并为 ${products.length} 个商品任务`);
 
         // 步骤3: 验证数据
         if (products.length === 0) {
@@ -405,8 +442,27 @@ function readExcelFile(file) {
                 try {
                     const workbook = XLSX.read(csvText, { type: 'string' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                    console.log('[CSV] 解析成功，数据行数:', jsonData.length);
+                    let jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    console.log('[CSV] 解析成功，原始数据行数:', jsonData.length);
+
+                    // 过滤掉中文注释行（第2行通常包含中文说明，如：商品名称(必填|最多200字)）
+                    // 检测方法：如果某行的第一个字段值包含中文括号和"必填/选填"等关键词，则认为是注释行
+                    jsonData = jsonData.filter(row => {
+                        const firstValue = Object.values(row)[0] || '';
+                        const isAnnotationRow =
+                            (typeof firstValue === 'string') &&
+                            (firstValue.includes('(') || firstValue.includes('（')) &&
+                            (firstValue.includes('必填') || firstValue.includes('选填') ||
+                                firstValue.includes('|') || firstValue.includes('最多'));
+
+                        if (isAnnotationRow) {
+                            console.log('[CSV] 跳过注释行:', firstValue.substring(0, 50));
+                            return false; // 过滤掉
+                        }
+                        return true; // 保留数据行
+                    });
+
+                    console.log('[CSV] 过滤后数据行数:', jsonData.length);
 
                     // 显示第一行数据预览
                     if (jsonData.length > 0) {

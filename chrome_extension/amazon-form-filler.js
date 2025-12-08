@@ -217,6 +217,12 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'bullet_point_3': 'productDetails.bulletPoint3',
     'bullet_point_4': 'productDetails.bulletPoint4',
     'bullet_point_5': 'productDetails.bulletPoint5',
+    // 兼容无下划线版本 (wanzhengbiaodan.csv 格式)
+    'bullet_point1': 'productDetails.bulletPoint1',
+    'bullet_point2': 'productDetails.bulletPoint2',
+    'bullet_point3': 'productDetails.bulletPoint3',
+    'bullet_point4': 'productDetails.bulletPoint4',
+    'bullet_point5': 'productDetails.bulletPoint5',
     'search_keywords': 'productDetails.searchKeywords',
     'release_date': 'productDetails.releaseDate',
     'website_release_date': 'productDetails.websiteReleaseDate',
@@ -230,6 +236,7 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'model_name': 'productDetails.model',
     'product_description': 'productDetails.description',
     'generic_keyword': 'productDetails.searchKeywords',
+    'generic_keywords': 'productDetails.searchKeywords', // 兼容复数形式
     'product_site_launch_date': 'productDetails.websiteReleaseDate',
     // 新增映射
     'material': 'productDetails.material',
@@ -313,6 +320,7 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'max_seller_price': 'offer.maxSellerPrice',
     'product_tax_code': 'offer.productTaxCode',
     'launch_date': 'offer.launchDate',
+    'merchant_release_date': 'offer.merchantReleaseDate',
     'max_order_quantity': 'offer.maxOrderQuantity',
     'gift_message': 'offer.giftMessage',
     'gift_wrap': 'offer.giftWrap',
@@ -434,6 +442,7 @@ function detectCurrentPage() {
     if (url.includes('/safety_and_compliance')) return 'safetyCompliance';
     if (url.includes('/offer')) return 'offer';
     if (url.includes('/images')) return 'images';
+    if (url.includes('/variations')) return 'variations';
 
     // 通过页面内容检测
     const pageText = document.body.textContent;
@@ -441,6 +450,7 @@ function detectCurrentPage() {
     if (pageText.includes('原产国') && pageText.includes('保修说明')) return 'safetyCompliance';
     if (pageText.includes('数量') && pageText.includes('您的价格')) return 'offer';
     if (pageText.includes('主图片') || pageText.includes('上传多个文件')) return 'images';
+    if (pageText.includes('Variation Theme') || pageText.includes('变体主题') || pageText.includes('Add variation')) return 'variations';
 
     return 'unknown';
 }
@@ -464,12 +474,12 @@ async function fillProductDetailsPage(data, options) {
         { key: 'model', value: data.model_number || data.model_name || data.model },
         { key: 'manufacturer', value: data.manufacturer },
         { key: 'description', value: data.product_description || data.description },
-        { key: 'bullet_point_1', value: data.bullet_point_1 },
-        { key: 'bullet_point_2', value: data.bullet_point_2 },
-        { key: 'bullet_point_3', value: data.bullet_point_3 },
-        { key: 'bullet_point_4', value: data.bullet_point_4 },
-        { key: 'bullet_point_5', value: data.bullet_point_5 },
-        { key: 'search_keywords', value: data.generic_keyword || data.search_keywords },
+        { key: 'bullet_point_1', value: data.bullet_point_1 || data.bullet_point1 },
+        { key: 'bullet_point_2', value: data.bullet_point_2 || data.bullet_point2 },
+        { key: 'bullet_point_3', value: data.bullet_point_3 || data.bullet_point3 },
+        { key: 'bullet_point_4', value: data.bullet_point_4 || data.bullet_point4 },
+        { key: 'bullet_point_5', value: data.bullet_point_5 || data.bullet_point5 },
+        { key: 'search_keywords', value: data.generic_keyword || data.generic_keywords || data.search_keywords },
         { key: 'release_date', value: data.release_date },
         { key: 'website_release_date', value: data.product_site_launch_date || data.website_release_date },
         // 新增字段
@@ -626,38 +636,257 @@ async function fillOfferPage(data, options) {
 }
 
 /**
- * 填写变体页
+ * 填写变体页 (Variations Page)
+ * 支持多行变体数据
  */
 async function fillVariationsPage(data, options) {
     console.log('[变体页] 开始填写');
 
-    // 1. 选择变体主题
-    if (data.variation_theme) {
-        await fillFieldByPath('variations.variationTheme', data.variation_theme, options);
-        await sleep(1000); // 等待字段出现
+    // 支持多行变体模式: data.variations 是数组
+    const variations = data.variations || [data];
+    console.log(`[变体页] 检测到 ${variations.length} 个变体`);
+
+    // 1. 选择 Variation Theme (使用第一个变体的主题)
+    const firstVar = variations[0];
+    const themes = [];
+    if (firstVar.size) themes.push('Size');
+    if (firstVar.color) themes.push('Color');
+    if (firstVar.style) themes.push('Style');
+    if (firstVar.item_package_quantity) themes.push('Item Package Quantity');
+
+    console.log(`[变体页] 需要选择的主题: ${themes.join(', ')}`);
+
+    for (const theme of themes) {
+        const checkboxes = document.querySelectorAll('kat-checkbox, input[type="checkbox"]');
+        for (const cb of checkboxes) {
+            const label = cb.getAttribute('label') || cb.textContent || '';
+            if (label.includes(theme)) {
+                // 检查是否已勾选 (kat-checkbox 用 attribute，input 用 property)
+                const isChecked = cb.tagName === 'KAT-CHECKBOX'
+                    ? cb.getAttribute('checked') === 'true' || cb.hasAttribute('checked')
+                    : cb.checked;
+
+                if (!isChecked) {
+                    console.log(`[变体页] 尝试勾选主题: ${theme}`, cb);
+
+                    // 策略 1: 直接点击
+                    cb.click();
+
+                    // 策略 2: 如果是 kat-checkbox，尝试点击其内部的 input (Shadow DOM)
+                    if (cb.tagName === 'KAT-CHECKBOX' && cb.shadowRoot) {
+                        const innerInput = cb.shadowRoot.querySelector('input');
+                        if (innerInput) {
+                            innerInput.click();
+                        }
+                    }
+
+                    // 策略 3: 手动设置属性并触发事件
+                    if (cb.tagName === 'KAT-CHECKBOX') {
+                        cb.setAttribute('checked', 'true');
+                        cb.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                    } else {
+                        cb.checked = true;
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+
+                    console.log(`[变体页] 已勾选主题: ${theme}`);
+                    await sleep(500);
+                }
+                break;
+            }
+        }
     }
 
-    // 2. 填写变体具体字段
-    // 注意：这里我们需要手动指定映射到 variations.*，因为全局映射现在指向 productDetails.*
-    const variationFields = [
-        { key: 'size', path: 'variations.size', value: data.size },
-        { key: 'color', path: 'variations.color', value: data.color },
-        { key: 'item_package_quantity', path: 'variations.itemPackageQuantity', value: data.item_package_quantity },
-        { key: 'material', path: 'variations.material', value: data.material }
-    ];
+    // 等待主题勾选后的输入框生成
+    await sleep(2500);
 
-    for (const field of variationFields) {
-        if (field.value) {
-            // 检查该字段是否在当前变体主题下可见
-            const fieldConfig = AMAZON_FIELDS.variations[field.path.split('.')[1]];
-            const element = findElementByConfig(fieldConfig);
+    // 2. 填写每个变体的属性并点击 Add
+    console.log('[变体页] 开始逐个添加变体');
 
-            if (element) {
-                await fillFieldByPath(field.path, field.value, options);
-                await sleep(options.delayBetweenFields);
-            } else {
-                console.log(`[变体页] 跳过字段 ${field.key} (当前主题下不可见)`);
+    for (let i = 0; i < variations.length; i++) {
+        // 检查是否暂停或停止
+        const { workflowStatus } = await chrome.storage.local.get(['workflowStatus']);
+        if (workflowStatus === 'paused') {
+            console.log('🔴 [暂停检查] 检测到暂停状态，停止填写');
+            throw new Error('用户暂停了工作流');
+        }
+        if (workflowStatus === 'stopped') {
+            console.log('⛔ [停止检查] 检测到停止状态，终止填写');
+            throw new Error('用户停止了工作流');
+        }
+
+        const varData = variations[i];
+        console.log(`[变体页] 正在添加变体 ${i + 1}/${variations.length}`);
+
+        // 构建属性列表
+        const attributes = [];
+        if (varData.size) attributes.push({ key: 'size', value: varData.size });
+        if (varData.color) attributes.push({ key: 'color', value: varData.color });
+        if (varData.style) attributes.push({ key: 'style', value: varData.style });
+        if (varData.item_package_quantity) attributes.push({ key: 'item_package_quantity', value: varData.item_package_quantity });
+
+        // 填写每个属性
+        for (const attr of attributes) {
+            // 查找输入框策略：
+            // 1. 精确ID: size#1.value-input
+            // 2. 包含key的ID: [id*="size"][id*="value"]
+            // 3. 包含key的kat-input: kat-input[id*="size"]
+            const inputId = `${attr.key}#1.value-input`;
+            let input = document.getElementById(inputId);
+
+            if (!input) {
+                console.log(`[变体页] 精确ID未找到 (${inputId})，尝试备用查找...`);
+                // 备用1: 通过 querySelector 查找 id 包含 attr.key 的输入框
+                input = document.querySelector(`[id*="${attr.key}"][id*="value-input"]`);
             }
+
+            if (!input) {
+                // 备用2: 查找 kat-input
+                input = document.querySelector(`kat-input[id*="${attr.key}"]`);
+            }
+
+            if (input) {
+                console.log(`[变体页] 找到输入框: ${attr.key}`, input.id || input.tagName);
+                await fillField(input, attr.value, options);
+                await sleep(300);
+
+                // 立即查找并点击该属性对应的 "Add" 按钮
+                // Add 按钮通常是 input 的 nextElementSibling 或在父级里
+                let addButton = input.nextElementSibling;
+                if (!addButton || !(addButton.tagName === 'BUTTON' || addButton.tagName === 'KAT-BUTTON')) {
+                    // 在父级里查找
+                    const parent = input.parentElement;
+                    if (parent) {
+                        addButton = parent.querySelector('button, kat-button');
+                    }
+                }
+
+                if (addButton) {
+                    const btnText = (addButton.textContent || addButton.getAttribute('label') || '').toLowerCase();
+                    if (btnText.includes('add') || btnText.includes('添加')) {
+                        addButton.click();
+                        console.log(`[变体页] 已点击 Add 按钮 (${attr.key})`);
+                        await sleep(800); // 等待 UI 更新
+                    }
+                }
+            } else {
+                console.warn(`[变体页] 未找到属性输入框: ${attr.key}`);
+            }
+        }
+    }
+
+    // 等待矩阵生成
+    await sleep(3000);
+
+    // 3. 填写变体矩阵 (Offer Matrix) - 使用 ID 后缀匹配
+    console.log('[变体页] 开始填写报价矩阵 - 启动 ID 后缀匹配模式');
+
+    const matrixInputs = Array.from(document.querySelectorAll('input, kat-input, select, kat-select'));
+
+    for (let i = 0; i < variations.length; i++) {
+        // 检查是否暂停或停止
+        const { workflowStatus } = await chrome.storage.local.get(['workflowStatus']);
+        if (workflowStatus === 'paused') {
+            console.log('🔴 [暂停检查] 检测到暂停状态，停止填写');
+            throw new Error('用户暂停了工作流');
+        }
+        if (workflowStatus === 'stopped') {
+            console.log('⛔ [停止检查] 检测到停止状态，终止填写');
+            throw new Error('用户停止了工作流');
+        }
+
+        const varData = variations[i];
+        console.log(`[变体页] 正在为变体匹配矩阵行: ${varData.item_name || 'Item ' + (i + 1)}`);
+
+        let matchedSuffix = null;
+
+        // 构建特征值列表
+        const featureValues = [];
+        if (varData.size) featureValues.push({ key: 'size', val: varData.size });
+        if (varData.color) featureValues.push({ key: 'color', val: varData.color });
+        if (varData.style) featureValues.push({ key: 'style', val: varData.style });
+        if (varData.item_package_quantity) featureValues.push({ key: 'item_package_quantity', val: varData.item_package_quantity });
+
+        if (featureValues.length === 0) {
+            console.warn('[变体页] 变体缺少特征值，无法定位矩阵行');
+            continue;
+        }
+
+        // 寻找锚点输入框（用来获取 ID 后缀）
+        for (const feature of featureValues) {
+            const targetVal = String(feature.val).trim().toLowerCase();
+
+            const candidate = matrixInputs.find(inp => {
+                const v = String(inp.value || inp.getAttribute('value') || '').trim().toLowerCase();
+                const id = String(inp.id || inp.getAttribute('uid') || '').toLowerCase();
+
+                // 排除批量修改行
+                if (id.includes('bulk-update-row')) return false;
+
+                // 排除创建输入框 (value-input 结尾的)
+                if (id.endsWith('value-input')) return false;
+
+                // 只匹配矩阵行 (通常包含 gio_child, child, row 等关键词)
+                if (!id.includes('gio_child') && !id.includes('-child-') && !id.includes('_row')) {
+                    // 如果ID不包含明显的行标识符，跳过
+                    return false;
+                }
+
+                return v === targetVal && id.includes(feature.key);
+            });
+
+            if (candidate) {
+                const idObj = candidate.id || candidate.getAttribute('uid');
+                const lastDashIndex = idObj.lastIndexOf('-');
+                if (lastDashIndex !== -1) {
+                    matchedSuffix = idObj.substring(lastDashIndex);
+                    console.log(`[变体页] 成功定位矩阵行! 后缀: ${matchedSuffix} (通过 ${feature.key}=${feature.val})`);
+                    break;
+                }
+            }
+        }
+
+        if (matchedSuffix) {
+            // 使用后缀查找同行的字段并填写
+
+            // Price
+            const priceInput = document.querySelector(`[id*="our_price"][id$="${matchedSuffix}"], [id*="standard_price"][id$="${matchedSuffix}"]`);
+            if (priceInput && (varData.your_price || varData.sale_price)) {
+                await fillField(priceInput, varData.your_price || varData.sale_price, options);
+            }
+
+            // SKU
+            const skuInput = document.querySelector(`[id*="contribution_sku"][id$="${matchedSuffix}"], [id*="sku"][id$="${matchedSuffix}"]`);
+            if (skuInput && varData.sku) {
+                await fillField(skuInput, varData.sku, options);
+            }
+
+            // Quantity
+            const qtyInput = document.querySelector(`[id*="quantity"][id$="${matchedSuffix}"]`);
+            if (qtyInput && varData.quantity) {
+                await fillField(qtyInput, varData.quantity, options);
+            }
+
+            // External ID
+            const extIdInput = document.querySelector(`[id*="externally_assigned_product_identifier"][id$="${matchedSuffix}"], [id*="external_product_id"][id$="${matchedSuffix}"]`);
+            if (extIdInput && varData.external_product_id) {
+                await fillField(extIdInput, varData.external_product_id, options);
+            }
+
+            // External ID Type
+            const extIdTypeInput = document.querySelector(`[id*="external_product_id_type"][id$="${matchedSuffix}"]`);
+            if (extIdTypeInput && varData.external_product_id_type) {
+                await fillField(extIdTypeInput, varData.external_product_id_type, options);
+            }
+
+            // Condition
+            const condInput = document.querySelector(`[id*="condition"][id$="${matchedSuffix}"]`);
+            if (condInput && varData.condition) {
+                await fillField(condInput, varData.condition, options);
+            }
+
+        } else {
+            console.warn(`[变体页] 无法定位变体 "${varData.item_name}" 的矩阵行`);
         }
     }
 
@@ -721,6 +950,42 @@ async function fillImagesPage(data) {
         }
     }
 }
+
+/**
+ * 通用字段填写函数
+ */
+async function fillField(element, value, options) {
+    if (!element) return;
+
+    const tagName = element.tagName.toLowerCase();
+    const type = element.getAttribute('type');
+
+    // 0. 特殊处理：如果是 select 或者是 shadow dom 中的 dropdown
+    if (tagName === 'select' || tagName === 'kat-select' || tagName === 'kat-dropdown') {
+        await fillDropdown(element, value);
+        return;
+    }
+
+    // 1. Checkbox / Radio
+    if (type === 'checkbox' || type === 'radio') {
+        // 对于 checkbox，如果 value 是 true/false 或者是 'Yes'/'No'
+        if (type === 'checkbox') {
+            const shouldCheck = String(value).toLowerCase() === 'true' || String(value).toLowerCase() === 'yes';
+            if (element.checked !== shouldCheck) {
+                element.click();
+                await sleep(options.delayBetweenFields || 300);
+            }
+        } else {
+            // Radio
+            await selectRadioOption(element, value);
+        }
+        return;
+    }
+
+    // 2. 默认 Textbox
+    await fillTextbox(element, value, options && options.humanLikeTyping);
+}
+
 
 /**
  * 根据路径填写字段
@@ -1103,7 +1368,6 @@ async function fillTextbox(element, value, humanLike = true) {
         // 如果当前值已经等于目标值，直接跳过，防止重复填写
         if (typeof value === 'string' && nativeInput.value === value) {
             console.log(`[填写] 值相同，跳过 (Current: ${nativeInput.value}, Target: ${value})`);
-
             // 即便值相同，虽然不重新输入，但为了保险起见，高亮一下表示已确认
             highlightElement(element);
             await sleep(500);
@@ -1156,6 +1420,7 @@ async function fillTextbox(element, value, humanLike = true) {
         throw e;
     }
 }
+
 
 /**
  * 填写下拉框

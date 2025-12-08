@@ -561,7 +561,7 @@ class FloatingPanel {
         // 使用现有的 PageDetector (假设已加载)
         if (window.pageDetector) {
             const status = window.pageDetector.detectCurrentPage();
-            const isFormPage = ['productDetails', 'safetyCompliance', 'offer', 'images'].includes(status);
+            const isFormPage = ['productDetails', 'variations', 'safetyCompliance', 'offer', 'images'].includes(status);
             return { alreadyOnForm: isFormPage, pageType: status };
         }
         return { alreadyOnForm: false, pageType: 'unknown' };
