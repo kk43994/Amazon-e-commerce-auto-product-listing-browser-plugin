@@ -1,0 +1,3 @@
+country_of_origin,warranty,dangerous_goods,age_range_description,responsible_person_email,compliance_media,gpsr_safety_certification,manufacturer_email,ships_globally,ghs_classification
+China,1 Year Warranty,Not Applicable,Adult,test@example.com,,test_certification,manufacturer@example.com,Yes,
+Japan,No Warranty,Not Applicable,Adult,,,,No,

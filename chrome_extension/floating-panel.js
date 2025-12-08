@@ -239,6 +239,7 @@ class FloatingPanel {
         this.state.totalProducts = this.state.products.length;
         this.state.isRunning = true;
         this.state.isPaused = false;
+        this.state.isNavigating = false; // Note: Initialize navigation lock
 
         if (this.state.products.length > 0) {
             this.state.currentProduct = this.state.products[0];
@@ -382,7 +383,7 @@ class FloatingPanel {
         if (!this.panel) return;
 
         document.getElementById('ziniao-task-name').textContent =
-            this.state.currentProduct ? (this.state.currentProduct.title || this.state.currentProduct.asin) : '无任务';
+            this.state.currentProduct ? (this.state.currentProduct.item_name || this.state.currentProduct.title || this.state.currentProduct.asin) : '无任务';
         document.getElementById('ziniao-status-text').textContent = this.state.statusText;
         document.getElementById('ziniao-progress').style.width = `${this.calculateProgress()}%`;
         document.getElementById('ziniao-counter').textContent = this.state.currentIndex + 1;
@@ -537,10 +538,14 @@ class FloatingPanel {
                 await this.fillCurrentPage();
             } else {
                 // 不在表单页，执行搜索导航
-                this.updateStatus('正在搜索商品...');
-                await this.executeNavigation();
-                // 导航成功后，重置已填写页面记录
-                this.state.filledPages.clear();
+                if (!this.state.isNavigating) {
+                    this.updateStatus('正在搜索商品...');
+                    await this.executeNavigation();
+                    // 导航成功后，重置已填写页面记录
+                    this.state.filledPages.clear();
+                } else {
+                    console.log('[工作流] 正在导航中，跳过重复触发');
+                }
             }
 
         } catch (error) {
@@ -569,16 +574,41 @@ class FloatingPanel {
             return;
         }
 
+        if (this.state.isNavigating) {
+            console.log('[工作流] 导航锁已激活，阻止重复进入');
+            return;
+        }
+
         if (!this.state.currentProduct) return;
 
         // 调用 AmazonNavigator
         if (window.amazonNavigator) {
-            const result = await window.amazonNavigator.searchASINAndEnterForm(this.state.currentProduct.asin);
-            if (result.success) {
-                // 导航成功，页面可能会跳转，脚本会重新加载并继续
-                this.updateStatus('导航成功，等待页面加载...');
-            } else {
-                throw new Error(result.error || '导航失败');
+            this.state.isNavigating = true; // 上锁
+
+            try {
+                // 优先使用 asin，其次 external_product_id，最后 sku
+                const searchTerm = this.state.currentProduct.asin ||
+                    this.state.currentProduct.external_product_id ||
+                    this.state.currentProduct.sku;
+
+                if (!searchTerm) {
+                    this.showFloatingError('❌ 缺少ASIN或产品ID，无法搜索');
+                    throw new Error('未找到有效的产品ID (ASIN/External ID/SKU)');
+                }
+
+                const result = await window.amazonNavigator.searchASINAndEnterForm(searchTerm);
+                if (result.success) {
+                    // 导航成功，页面可能会跳转，脚本会重新加载并继续
+                    this.updateStatus('导航成功，等待页面加载...');
+                } else {
+                    throw new Error(result.error || '导航失败');
+                }
+            } finally {
+                // 3秒后释放锁，防止页面跳转期间再次触发，或者在发生错误时释放
+                setTimeout(() => {
+                    this.state.isNavigating = false;
+                    console.log('[工作流] 导航锁已释放');
+                }, 3000);
             }
         }
     }

@@ -83,6 +83,14 @@ const AMAZON_FIELDS = {
             type: 'textbox',
             fallback: { name: 'generic_keyword-0-value', labels: ['搜索关键字', '搜索关键词', '検索キーワード', 'Search Terms', 'Generic Keyword'] }
         },
+        productIdType: {
+            type: 'dropdown',
+            fallback: {
+                names: ['externally_assigned_product_identifier-0-type', 'external_product_id_type', 'external_product_id_type-0-value'],
+                labels: ['外部产品 ID 类型', 'External Product ID Type', 'GTIN', 'EAN', 'JAN']
+            }
+        },
+        productId: { uid: '46_212', type: 'textbox', fallback: { name: 'external_product_id-0-value', labels: ['外部产品 ID', 'External Product ID'] } },
         releaseDate: { uid: '46_214', type: 'textbox', format: 'date', fallback: { labels: ['提供发布日期', 'Release Date'] } },
         websiteReleaseDate: { uid: '46_218', type: 'textbox', format: 'date', fallback: { name: 'product_site_launch_date-0-value', labels: ['产品网站发布日期', 'Product Site Launch Date', 'Website Release Date'] } },
         // 新增字段
@@ -126,20 +134,17 @@ const AMAZON_FIELDS = {
         countryOfOrigin: {
             uid: '53_30',
             type: 'dropdown',
-            fallback: { labels: ['原产国/原产地', '原产国/地区', '原産国/地域', 'Country/Region of Origin'] }
+            fallback: { name: 'country_of_origin-0-value', labels: ['原产国/原产地', '原产国/地区', '原産国/地域', 'Country/Region of Origin'] }
         },
-        warranty: { uid: '53_36', type: 'textbox', fallback: { labels: ['保修说明', 'Warranty Description'] } },
-        dangerousGoods: { uid: '53_46', type: 'dropdown', fallback: { labels: ['危险商品规管', 'Dangerous Goods Regulations'] } },
+        warranty: { uid: '53_36', type: 'textbox', fallback: { name: 'warranty_description-0-value', labels: ['保修说明', 'Warranty Description'] } },
+        dangerousGoods: { uid: '53_46', type: 'dropdown', fallback: { name: 'supplier_declared_dg_hz_regulation-0-value', labels: ['危险商品规管', 'Dangerous Goods Regulations'] } },
         // 更多合规字段
-        ageRangeDescription: { type: 'dropdown', fallback: { labels: ['该产品是否有买家年龄限制', 'Is this product subject to age restrictions'] } },
-        responsiblePersonEmail: { type: 'textbox', fallback: { labels: ['负责人的电子邮件或电子地址', 'Responsible Person Email'] } },
-        complianceMedia: { type: 'textbox', fallback: { labels: ['合规媒介', 'Compliance Media'] } },
-        complianceMediaContent: { type: 'dropdown', fallback: { labels: ['合规媒介内容类型', 'Compliance Media Content Type'] } },
-        complianceMediaLanguage: { type: 'dropdown', fallback: { labels: ['合规媒介语言', 'Compliance Media Language'] } },
-        complianceMediaLocation: { type: 'textbox', fallback: { labels: ['合规媒体位置来源', 'Compliance Media Location'] } },
-        gpsrSafetyCertification: { type: 'dropdown', fallback: { labels: ['GPSR 安全认证', 'GPSR Safety Certification'] } },
-        manufacturerEmail: { type: 'textbox', fallback: { labels: ['制造商的电子邮件地址或电子地址', 'Manufacturer Email'] } },
-        globalTrade: { type: 'dropdown', fallback: { labels: ['全球发货', 'Global Trade'] } },
+        ageRangeDescription: { type: 'radio', fallback: { name: 'is_this_product_subject_to_buyer_age_restrictions-0-value', labels: ['该产品是否有买家年龄限制', 'Is this product subject to age restrictions'] } },
+        responsiblePersonEmail: { type: 'textbox', fallback: { name: 'dsa_responsible_party_address-0-value', labels: ['负责人的电子邮件或电子地址', 'Responsible Person Email'] } },
+        complianceMediaLocation: { type: 'textbox', fallback: { name: 'compliance_media-0-source_location', labels: ['合规媒体位置来源', 'Compliance Media Location'] } },
+        gpsrSafetyCertification: { type: 'radio', fallback: { name: 'gpsr_safety_attestation-0-value', labels: ['GPSR 安全认证', 'GPSR Safety Attestation'] } }, // Yes/No Radio
+        manufacturerEmail: { type: 'textbox', fallback: { name: 'gpsr_manufacturer_reference-0-gpsr_manufacturer_email_address', labels: ['制造商的电子邮件地址或电子地址', 'Manufacturer Email'] } },
+        globalTrade: { type: 'radio', fallback: { name: 'ships_globally-0-value', labels: ['全球发货', 'Ships Globally', 'Global Trade'] } },
         ghsClassification: { type: 'dropdown', fallback: { labels: ['GHS 化学 H 代码', 'GHS Classification'] } }
     },
 
@@ -148,44 +153,39 @@ const AMAZON_FIELDS = {
         variationTheme: { type: 'variation_theme', fallback: { labels: ['选择变体类型：', 'Variation Theme'] } },
         // 变体具体字段 (勾选主题后出现)
         size: { type: 'textbox', fallback: { labels: ['尺码', 'Size'] } },
-        color: { type: 'textbox', fallback: { labels: ['颜色', 'Color'] } },
-        itemPackageQuantity: { type: 'textbox', fallback: { labels: ['成套产品数量', 'Item Package Quantity'] } },
-        material: { type: 'textbox', fallback: { labels: ['材料', 'Material'] } }
+        mainImage: { id: 'ProductImage_MAIN-input_input', type: 'file' },
+        image1: { id: 'ProductImage_PT01-input_input', type: 'file' },
+        image2: { id: 'ProductImage_PT02-input_input', type: 'file' },
+        image3: { id: 'ProductImage_PT03-input_input', type: 'file' },
+        image4: { id: 'ProductImage_PT04-input_input', type: 'file' },
+        image5: { id: 'ProductImage_PT05-input_input', type: 'file' },
+        image6: { id: 'ProductImage_PT06-input_input', type: 'file' },
+        image7: { id: 'ProductImage_PT07-input_input', type: 'file' },
+        image8: { id: 'ProductImage_PT08-input_input', type: 'file' }
     },
 
     // === 报价页 (UID 48_xx) ===
     offer: {
-        quantity: {
-            uid: '48_35',
-            type: 'textbox',
-            fallback: { labels: ['数量', '在庫数', 'Quantity'] }
-        },
-        handlingTime: { uid: '48_38', type: 'textbox', fallback: { labels: ['处理时间', 'Handling Time'] } },
-        yourPrice: {
-            uid: '48_53',
-            type: 'textbox',
-            fallback: { labels: ['您的价格', '销售价格', '販売価格', 'Your Price'] } // 销售价格有时也指这个
-        },
-        listPrice: {
-            uid: '48_95',
-            type: 'textbox',
-            fallback: { labels: ['市场价', '价格表（含税）', 'List Price'] }
-        },
-        salePrice: { type: 'textbox', fallback: { labels: ['销售价格', 'Sale Price'] } },
-        saleStartDate: { type: 'textbox', format: 'date', fallback: { labels: ['销售开始日期', 'Sale Start Date'] } },
-        saleEndDate: { type: 'textbox', format: 'date', fallback: { labels: ['销售截止日期', 'Sale End Date'] } },
-        condition: { type: 'dropdown', fallback: { labels: ['商品状况', 'Condition'] } },
-        fulfillmentChannel: { uid: '48_163', type: 'radio', value: 'FBM', fallback: { labels: ['配送渠道', 'Fulfillment Channel'] } },
-        // 更多报价字段
-        restockDate: { type: 'textbox', format: 'date', fallback: { labels: ['重新库存日期', 'Restock Date'] } },
-        mapPrice: { type: 'textbox', fallback: { labels: ['最低广告价格', 'Minimum Advertised Price'] } },
-        minSellerPrice: { type: 'textbox', fallback: { labels: ['卖方允许的最低价格', 'Minimum Seller Allowed Price'] } },
-        maxSellerPrice: { type: 'textbox', fallback: { labels: ['卖方允许的最高价格', 'Maximum Seller Allowed Price'] } },
-        productTaxCode: { type: 'textbox', fallback: { labels: ['产品税码', 'Product Tax Code'] } },
-        launchDate: { type: 'textbox', format: 'date', fallback: { labels: ['发售日期', 'Launch Date'] } },
-        maxOrderQuantity: { type: 'textbox', fallback: { labels: ['最大订单数量', 'Max Order Quantity'] } },
-        giftMessage: { type: 'dropdown', fallback: { labels: ['可以提供礼品信息', 'Gift Message'] } }, // 假设是下拉或单选
-        giftWrap: { type: 'dropdown', fallback: { labels: ['表示礼品包装可用', 'Gift Wrap'] } },
+        sku: { type: 'textbox', fallback: { name: 'contribution_sku-0-value', labels: ['SKU', 'Seller SKU'] } },
+        quantity: { uid: '48_35', type: 'textbox', id: 'fulfillment_availability#1.quantity', fallback: { labels: ['数量', '在庫数', 'Quantity'] } },
+        handlingTime: { uid: '48_38', type: 'textbox', id: 'fulfillment_availability#1.lead_time_to_ship_max_days', fallback: { labels: ['处理时间', 'Handling Time'] } },
+        yourPrice: { uid: '48_53', type: 'textbox', fallback: { name: 'purchasable_offer-0-our_price-0-schedule-0-value_with_tax', labels: ['您的价格', '销售价格', '販売価格', 'Your Price'] } },
+        listPrice: { uid: '48_95', type: 'textbox', fallback: { name: 'list_price-0-value', labels: ['市场价', '价格表（含税）', 'List Price including tax', 'List Price'] } },
+        salePrice: { type: 'textbox', fallback: { name: 'purchasable_offer-0-discounted_price-0-schedule-0-value_with_tax', labels: ['销售价格', 'Sale Price'] } },
+        saleStartDate: { type: 'textbox', format: 'date', fallback: { name: 'purchasable_offer-0-discounted_price-0-schedule-0-start_at', labels: ['销售开始日期', 'Sale Start Date'] } },
+        saleEndDate: { type: 'textbox', format: 'date', fallback: { name: 'purchasable_offer-0-discounted_price-0-schedule-0-end_at', labels: ['销售截止日期', 'Sale End Date'] } },
+        condition: { type: 'dropdown', fallback: { labels: ['商品状况', 'Item Condition', 'Condition'] } },
+        fulfillmentChannel: { uid: '48_163', type: 'radio', value: 'FBM', fallback: { name: 'offerFulfillment', labels: ['配送渠道', 'Fulfillment Channel', 'I will ship this item myself'] } },
+        restockDate: { uid: '48_163', type: 'textbox', format: 'date', id: 'fulfillment_availability#1.restock_date', fallback: { labels: ['重新库存日期', 'Restock Date'] } },
+        mapPrice: { type: 'textbox', fallback: { name: 'purchasable_offer-0-map_price-0-schedule-0-value_with_tax', labels: ['最低广告价格', 'Minimum Advertised Price'] } },
+        minSellerPrice: { type: 'textbox', fallback: { name: 'purchasable_offer-0-minimum_seller_allowed_price-0-schedule-0-value_with_tax', labels: ['卖方允许的最低价格', 'Minimum Seller Allowed Price'] } },
+        maxSellerPrice: { type: 'textbox', fallback: { name: 'purchasable_offer-0-maximum_seller_allowed_price-0-schedule-0-value_with_tax', labels: ['卖方允许的最高价格', 'Maximum Seller Allowed Price'] } },
+        productTaxCode: { type: 'dropdown', fallback: { name: 'product_tax_code-0-value', labels: ['产品税码', 'Product Tax Code'] } },
+        launchDate: { type: 'textbox', format: 'date', fallback: { name: 'product_site_launch_date-0-value', labels: ['发售日期', 'Launch Date'] } },
+        merchantReleaseDate: { type: 'textbox', format: 'date', fallback: { name: 'merchant_release_date-0-value', labels: ['商家发布日期', 'Merchant Release Date'] } },
+        maxOrderQuantity: { type: 'textbox', fallback: { name: 'max_order_quantity-0-value', labels: ['最大订单数量', 'Max Order Quantity'] } },
+        giftMessage: { type: 'radio', fallback: { name: 'gift_options-0-can_be_messaged', labels: ['礼品信息', 'Gift Message'] } },
+        giftWrap: { type: 'radio', fallback: { name: 'gift_options-0-can_be_wrapped', labels: ['礼品包装', 'Gift Wrap'] } },
         conditionNote: { type: 'textbox', fallback: { labels: ['补充状况信息', 'Condition Note'] } }
     },
 
@@ -297,18 +297,17 @@ const EXCEL_TO_AMAZON_MAPPING = {
     // 'material': 'variations.material',
 
     // 报价
+    'sku': 'offer.sku',
     'quantity': 'offer.quantity',
     'handling_time': 'offer.handlingTime',
+    'restock_date': 'offer.restockDate',
     'your_price': 'offer.yourPrice',
     'list_price': 'offer.listPrice',
     'sale_price': 'offer.salePrice',
     'sale_start_date': 'offer.saleStartDate',
     'sale_end_date': 'offer.saleEndDate',
     'condition': 'offer.condition',
-    'sale_end_date': 'offer.saleEndDate',
-    'condition': 'offer.condition',
     'fulfillment_channel': 'offer.fulfillmentChannel',
-    'restock_date': 'offer.restockDate',
     'map_price': 'offer.mapPrice',
     'min_seller_price': 'offer.minSellerPrice',
     'max_seller_price': 'offer.maxSellerPrice',
@@ -318,6 +317,9 @@ const EXCEL_TO_AMAZON_MAPPING = {
     'gift_message': 'offer.giftMessage',
     'gift_wrap': 'offer.giftWrap',
     'condition_note': 'offer.conditionNote',
+
+    // 安全与合规（添加缺少的映射）
+    'ships_globally': 'safetyCompliance.globalTrade',
 
     // 图片
     'main_image': 'images.mainImage',
@@ -534,19 +536,13 @@ async function fillSafetyCompliancePage(data, options) {
     const fields = [
         { key: 'country_of_origin', value: data.country_of_origin },
         { key: 'warranty', value: data.warranty },
-        { key: 'country_of_origin', value: data.country_of_origin },
-        { key: 'warranty', value: data.warranty },
-        { key: 'dangerous_goods', value: data.dangerous_goods || '該当なし' },
-        // Added safety fields
+        { key: 'dangerous_goods', value: data.dangerous_goods || 'Not Applicable' }, // Default to Not Applicable/該当なし
         { key: 'age_range_description', value: data.age_range_description },
         { key: 'responsible_person_email', value: data.responsible_person_email },
-        { key: 'compliance_media', value: data.compliance_media },
-        { key: 'compliance_media_content', value: data.compliance_media_content },
-        { key: 'compliance_media_language', value: data.compliance_media_language },
-        { key: 'compliance_media_location', value: data.compliance_media_location },
+        { key: 'compliance_media_location', value: data.compliance_media || data.compliance_media_location },
         { key: 'gpsr_safety_certification', value: data.gpsr_safety_certification },
         { key: 'manufacturer_email', value: data.manufacturer_email },
-        { key: 'global_trade', value: data.global_trade },
+        { key: 'global_trade', value: data.ships_globally || data.global_trade }, // Support both keys
         { key: 'ghs_classification', value: data.ghs_classification }
     ];
 
@@ -581,6 +577,7 @@ async function fillOfferPage(data, options) {
     console.log('[报价页] 开始填写');
 
     const fields = [
+        { key: 'sku', value: data.sku },
         { key: 'quantity', value: data.quantity },
         { key: 'handling_time', value: data.handling_time },
         { key: 'your_price', value: data.your_price },
@@ -622,8 +619,8 @@ async function fillOfferPage(data, options) {
         }
     }
 
-    // 选择配送渠道（自配送）
-    await selectFulfillmentChannel('FBM');
+    // 选择配送渠道
+    await selectFulfillmentChannel(data.fulfillment_channel || 'FBM');
 
     console.log('[报价页] 填写完成');
 }
@@ -714,7 +711,7 @@ async function fillImagesPage(data) {
             const dropZone = targetInput.closest('.kat-upload-dragger') || targetInput.parentElement;
 
             console.log(`[图片] 正在上传 ${img.name}: ${img.path}`);
-            const success = await uploadImageFromUrl(img.path, dropZone);
+            const success = await uploadImageFromUrl(img.path, dropZone, targetInput);
             if (success) {
                 console.log(`[图片] ${img.name} 上传成功`);
                 await sleep(2000); // 等待上传处理
@@ -766,7 +763,7 @@ async function fillFieldByPath(path, value, options) {
             await fillDropdown(element, value);
             break;
         case 'radio':
-            await clickRadio(element);
+            await selectRadioOption(element, value);
             break;
         default:
             console.warn(`[未知类型] ${fieldConfig.type}`);
@@ -854,9 +851,15 @@ function findElementByConfig(config) {
 
     // 3. 后备策略：通过name或label查找
     if (config.fallback) {
-        // 尝试通过name查找
-        if (config.fallback.name) {
-            const element = document.querySelector(`[name="${config.fallback.name}"]`);
+        // 尝试通过name查找 (支持多名称)
+        const names = config.fallback.names || (config.fallback.name ? [config.fallback.name] : []);
+
+        for (const name of names) {
+            let element = document.querySelector(`[name="${name}"]`);
+            // 如果Document中没找到，尝试在Shadow DOM中查找
+            if (!element) {
+                element = findElementByNameInShadowDOM(name);
+            }
             if (element) return element;
         }
 
@@ -996,6 +999,29 @@ function findElementByLabels(labels, targetType = 'textbox', index = 0) {
 }
 
 /**
+ * 在Shadow DOM中通过name查找元素
+ */
+function findElementByNameInShadowDOM(name) {
+    function search(root) {
+        // 先在当前层级找
+        const element = root.querySelector(`[name="${name}"]`);
+        if (element) return element;
+
+        // 递归查找子Shadow DOM
+        const all = root.querySelectorAll('*');
+        for (const el of all) {
+            if (el.shadowRoot) {
+                const found = search(el.shadowRoot);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    return search(document);
+}
+
+/**
  * 通过placeholder查找元素 (支持Shadow DOM)
  */
 function findElementByPlaceholder(text) {
@@ -1063,7 +1089,7 @@ async function fillTextbox(element, value, humanLike = true) {
         let nativeInput = element;
         let isKatElement = false;
 
-        if (tagName === 'kat-input' || tagName === 'kat-textarea') {
+        if (tagName === 'kat-input' || tagName === 'kat-textarea' || tagName === 'kat-date-picker') {
             isKatElement = true;
             // 尝试获取内部的 input/textarea
             if (element.shadowRoot) {
@@ -1072,6 +1098,17 @@ async function fillTextbox(element, value, humanLike = true) {
         }
 
         console.log(`[填写] 目标元素: ${tagName}, Value: ${value}`);
+
+        // 0. 幂等性检查 (Idempotency Check)
+        // 如果当前值已经等于目标值，直接跳过，防止重复填写
+        if (typeof value === 'string' && nativeInput.value === value) {
+            console.log(`[填写] 值相同，跳过 (Current: ${nativeInput.value}, Target: ${value})`);
+
+            // 即便值相同，虽然不重新输入，但为了保险起见，高亮一下表示已确认
+            highlightElement(element);
+            await sleep(500);
+            return;
+        }
 
         nativeInput.focus();
         await sleep(100);
@@ -1090,18 +1127,17 @@ async function fillTextbox(element, value, humanLike = true) {
                 nativeInput.value += char;
                 nativeInput.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
 
-                // 同步更新 host 元素
-                if (isKatElement) {
+                // 同步更新 host 元素 (排除 kat-date-picker，因为它内部逻辑复杂，手动更新host会导致报错)
+                if (isKatElement && tagName !== 'kat-date-picker') {
                     element.value = nativeInput.value;
-                    // Amazon的组件可能监听 host 的 input 事件
                     element.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
                 }
-                await sleep(randomInt(30, 80)); // 稍微加快一点
+                await sleep(randomInt(30, 80));
             }
         } else {
             nativeInput.value = value;
             nativeInput.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-            if (isKatElement) {
+            if (isKatElement && tagName !== 'kat-date-picker') {
                 element.value = value;
                 element.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
             }
@@ -1111,7 +1147,7 @@ async function fillTextbox(element, value, humanLike = true) {
         nativeInput.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         nativeInput.blur();
 
-        if (isKatElement) {
+        if (isKatElement && tagName !== 'kat-date-picker') {
             element.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
 
@@ -1125,12 +1161,44 @@ async function fillTextbox(element, value, humanLike = true) {
  * 填写下拉框
  */
 async function fillDropdown(element, value) {
+    // 尝试查找映射值
+    const mappedValue = DROPDOWN_MAPPING[value] || value;
+
+    // 0. 幂等性检查 (Idempotency Check)
+    // 检查当前选中的值是否已经包含目标关键词
+    let currentValue = element.value || element.textContent || '';
+    // 如果是 kat-dropdown 或其他组件，尝试从 shadow dom 或属性获取 label
+    if (element.tagName.includes('KAT-')) {
+        const shadow = element.shadowRoot;
+        if (shadow) {
+            const displaySpan = shadow.querySelector('.selection-text, .selected-option, .text-content');
+            if (displaySpan) {
+                currentValue = displaySpan.textContent;
+            }
+        }
+    }
+
+    if (currentValue && (currentValue.includes(value) || currentValue.includes(mappedValue))) {
+        console.log(`[下拉框] 已选中目标值，跳过 (Current: ${currentValue}, Target: ${value})`);
+        highlightElement(element);
+        await sleep(500);
+        return;
+    }
+
     // 点击打开下拉框
     element.click();
     await sleep(300);
+    // 如果是输入框类型的下拉（Autocomplete），模拟输入以过滤选项
+    if (element.tagName === 'INPUT' || (element.tagName === 'KAT-INPUT')) {
+        console.log(`[下拉框] 检测到输入框，尝试输入过滤: ${value}`);
+        // 使用 fillTextbox 的逻辑来模拟输入
+        await fillTextbox(element, value, true);
+        await sleep(2500); // 等待选项过滤加载
+    }
 
     // 尝试查找映射值
-    const mappedValue = DROPDOWN_MAPPING[value] || value;
+    // 尝试查找映射值 (已在函数开头定义)
+    // const mappedValue = DROPDOWN_MAPPING[value] || value;
 
     // 在Shadow DOM中查找选项
     let options = findDropdownOptions(mappedValue);
@@ -1145,6 +1213,15 @@ async function fillDropdown(element, value) {
         await sleep(200);
     } else {
         console.warn(`[下拉选项未找到] ${value} (Mapped: ${mappedValue})`);
+        // 如果是输入框，且没找到选项，但已经输入了值，可能也没关系（如果是允许自定义值的Combobox）
+        if (element.tagName !== 'INPUT' && element.tagName !== 'KAT-INPUT') {
+            showFloatingError(`未找到下拉选项: ${value}`);
+        } else {
+            // 尝试触发 Enter 键，确认输入
+            element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+            await sleep(100);
+            element.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
+        }
     }
 }
 
@@ -1169,9 +1246,13 @@ function findDropdownOptions(value) {
         const allElements = root.querySelectorAll('*');
 
         for (const el of allElements) {
-            if ((el.role === 'option' || el.tagName === 'OPTION') &&
+            // 扩展支持 kat-option 和 li (Amazon有些下拉是li结构)
+            if ((el.role === 'option' || el.tagName === 'OPTION' || el.tagName === 'KAT-OPTION' || el.tagName === 'LI') &&
                 el.textContent.includes(value)) {
-                options.push(el);
+                // 排除 hidden 的
+                if (el.style.display !== 'none') {
+                    options.push(el);
+                }
             }
 
             if (el.shadowRoot) {
@@ -1186,11 +1267,97 @@ function findDropdownOptions(value) {
 }
 
 /**
- * 点击单选按钮
+ * 选择单选按钮 (支持按值/Label查找)
  */
-async function clickRadio(element) {
-    element.click();
-    await sleep(200);
+async function selectRadioOption(element, value) {
+    console.log(`[单选] 尝试选择: ${value}`, element);
+
+    // 1. 获取所有同名 Radio Group
+    const name = element.getAttribute('name');
+    let group = [];
+
+    if (name) {
+        // 在 Shadow DOM 或 Document 中查找
+        const root = element.getRootNode();
+        if (root) {
+            group = Array.from(root.querySelectorAll(`input[type="radio"][name="${name}"], kat-radio[name="${name}"]`));
+        }
+    }
+
+    if (group.length === 0) {
+        group = [element]; // Fallback to single element
+    }
+
+    // 2. 找到匹配的 Option
+    let target = null;
+
+    // 策略 A: 匹配 Label 文本
+    for (const radio of group) {
+        // 找关联 Label
+        let labelText = '';
+        if (radio.labels && radio.labels.length > 0) {
+            labelText = radio.labels[0].textContent;
+        } else {
+            // 尝试在父级或兄弟节点找文本
+            const parent = radio.parentElement;
+            if (parent) labelText = parent.textContent;
+        }
+
+        // 清理文本
+        labelText = labelText.replace(/\s+/g, ' ').trim();
+        const valueClean = String(value).replace(/\s+/g, ' ').trim();
+
+        // 模糊匹配 (Yes/No, Yes/No based patterns)
+        if (labelText.includes(valueClean) || valueClean.includes(labelText)) {
+            target = radio;
+            console.log(`[单选] 通过 Label 匹配到:`, radio);
+            break;
+        }
+
+        // 策略 B: 匹配 Value 属性
+        if (radio.value === value || radio.getAttribute('value') === value) {
+            target = radio;
+            console.log(`[单选] 通过 Value 属性匹配到:`, radio);
+            break;
+        }
+
+        // 策略 C: 针对 Yes/No 的特殊处理
+        const isYes = /yes|true|hai|open|public/i.test(valueClean);
+        const isNo = /no|false|iie|private/i.test(valueClean);
+
+        if (isYes && /yes|true|hai/i.test(labelText)) { target = radio; break; }
+        if (isNo && /no|false|iie/i.test(labelText)) { target = radio; break; }
+    }
+
+    if (!target) {
+        // 如果找不到匹配的，但 group 里也就是 Yes/No 两个，且 value 是 Yes/No，尝试按顺序猜？
+        // 不推荐，还是只点击传进来的 element 作为 fallback
+        console.warn(`[单选] 未找到匹配 "${value}" 的选项，尝试点击默认找到的元素`);
+        target = element;
+    }
+
+    // 3. 执行点击 (多重策略)
+    try {
+        console.log('[单选] 执行点击:', target);
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await sleep(200);
+
+        // 策略 1: 直接 Click
+        target.click();
+        // 策略 2: Force Click Parent (如果 target 是 hidden input)
+        if (getComputedStyle(target).getPropertyValue('opacity') === '0' || target.style.display === 'none') {
+            if (target.parentElement) target.parentElement.click();
+        }
+
+        // 策略 3: Dispatch Input/Change
+        target.checked = true;
+        target.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        target.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+        target.dispatchEvent(new Event('click', { bubbles: true, composed: true }));
+
+    } catch (e) {
+        console.error('[单选] 点击失败:', e);
+    }
 }
 
 /**
@@ -1285,7 +1452,8 @@ function showImageUploadGuide(data) {
         if (fileInput) {
             // fileInput.click(); // 浏览器通常会拦截非用户触发的点击
             // 但我们可以高亮它
-            highlightElement(fileInput.parentElement || fileInput);
+            // highlightLocalElement(fileInput.parentElement || fileInput);
+            highlightLocalElement(fileInput.parentElement || fileInput);
         }
     }, 1000);
 }
@@ -1294,7 +1462,7 @@ function showImageUploadGuide(data) {
 /**
  * 高亮显示元素
  */
-function highlightElement(element) {
+function highlightLocalElement(element) {
     const original = {
         border: element.style.border,
         background: element.style.background
@@ -1445,6 +1613,7 @@ function dumpFormStructure() {
 // 暴露给全局
 window.dumpFormStructure = dumpFormStructure;
 
+
 /**
  * 将Excel序列日期转换为 YYYY/MM/DD 格式
  * @param {number|string} serial Excel序列号 (e.g. 45525)
@@ -1466,42 +1635,104 @@ function excelDateToJSDate(serial) {
 
     return `${year}/${month}/${day}`;
 }
+
 /**
  * 从URL上传图片 (模拟拖拽)
  * 支持本地服务器路径转换
  */
-async function uploadImageFromUrl(pathOrUrl, dropZone) {
+/**
+ * 从URL上传图片 (模拟拖拽)
+ * 支持本地服务器路径转换
+ */
+async function uploadImageFromUrl(pathOrUrl, dropZone, inputElement) {
     try {
         let url = pathOrUrl;
+        let filename = 'image.jpg'; // default
 
-        // 智能路径转换: 如果不是 http 开头，假设是本地文件，转换为 localhost URL
-        if (!url.startsWith('http')) {
-            // 提取文件名 (支持 Windows 和 Unix 路径)
-            const filename = pathOrUrl.split(/[/\\]/).pop();
+        // 1. Base64 Data URI
+        if (pathOrUrl.startsWith('data:image')) {
+            url = pathOrUrl;
+            const ext = pathOrUrl.substring(pathOrUrl.indexOf('/') + 1, pathOrUrl.indexOf(';'));
+            filename = `upload_${Date.now()}.${ext || 'jpg'}`;
+            console.log(`[图片] 检测到Base64图片, 生成文件名: ${filename}`);
+        }
+        // 2. HTTP/HTTPS URL
+        else if (pathOrUrl.startsWith('http')) {
+            url = pathOrUrl;
+            // 尝试从URL中提取干净的文件名
+            try {
+                const urlObj = new URL(pathOrUrl);
+                let namePart = urlObj.pathname.split('/').pop(); // 获取最后一部分
+                // 去除可能存在的 CDN 修饰符 (如 !w300, @something 等)
+                namePart = namePart.split('!')[0].split('@')[0];
+                filename = decodeURIComponent(namePart);
+                if (!filename) filename = 'image.jpg';
+            } catch (e) {
+                filename = 'image.jpg';
+            }
+        }
+        // 3. 本地路径 -> Localhost (需要开启本地 Python Server)
+        else {
+            filename = pathOrUrl.split(/[/\\]/).pop();
             url = `http://localhost:8000/${filename}`;
             console.log(`[图片] 转换本地路径为URL: ${url}`);
         }
 
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
+        // 使用Background Script代理请求 (避开CORS)
+        console.log(`[图片] 请求后台下载: ${url}`);
+        const response = await chrome.runtime.sendMessage({ action: 'fetchUrl', url: url });
 
-        const blob = await response.blob();
-        const filename = url.split('/').pop() || 'image.jpg';
-        const file = new File([blob], filename, { type: blob.type });
+        if (!response.success) throw new Error(`Fetch failed via background: ${response.error}`);
 
-        // 模拟拖拽事件
+        // 检查 Content-Type
+        if (!response.type || !response.type.startsWith('image/')) {
+            throw new Error(`Invalid content type: ${response.type}. URL must point to an actual image file (jpg/png), not a webpage.`);
+        }
+
+        // Base64 -> Blob
+        const byteCharacters = atob(response.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: response.type });
+        const file = new File([blob], filename, { type: response.type });
+
+        // 1. 赋值 files (Content Script 中赋值是有效的)
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
 
-        const events = ['dragenter', 'dragover', 'drop'];
-        for (const eventType of events) {
-            const event = new DragEvent(eventType, {
-                bubbles: true,
-                cancelable: true,
-                dataTransfer: dataTransfer
-            });
-            dropZone.dispatchEvent(event);
-            await sleep(50);
+        if (inputElement) {
+            inputElement.files = dataTransfer.files;
+
+            // 2. 使用 Script Injection 在 Main World 中触发事件
+            // 使用 src 注入绕过 CSP unsafe-inline 限制
+            const triggerId = 'upload_' + Date.now();
+            inputElement.setAttribute('data-upload-trigger-id', triggerId);
+
+            const script = document.createElement('script');
+            script.src = chrome.runtime.getURL('upload_helper.js');
+            script.onload = function () {
+                this.remove();
+            };
+            (document.head || document.documentElement).appendChild(script);
+
+            console.log('[图片] 已注入 upload_helper.js，等待 main world 执行');
+        }
+
+        // 同时也尝试拖拽模拟 (作为fallback)
+        if (dropZone) {
+            const events = ['dragenter', 'dragover', 'drop'];
+            for (const eventType of events) {
+                const event = new DragEvent(eventType, {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dataTransfer
+                });
+                dropZone.dispatchEvent(event);
+                await sleep(50);
+            }
         }
 
         return true;
@@ -1519,4 +1750,4 @@ window.AmazonFormFiller = {
     fillOfferPage,
     fillSafetyCompliancePage,
     fillImagesPage
-};
+}

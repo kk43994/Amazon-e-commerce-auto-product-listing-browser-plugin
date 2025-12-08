@@ -19,7 +19,8 @@
     "*://*.amazon.it/*",
     "*://*.amazon.es/*",
     "*://*.amazon.ca/*",
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "*://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -69,7 +70,8 @@
     {
       "resources": [
         "libs/*",
-        "page-analyzer-injected.js"
+        "page-analyzer-injected.js",
+        "upload_helper.js"
       ],
       "matches": [
         "<all_urls>"

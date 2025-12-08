@@ -32,13 +32,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     // 代理请求 (解决Mixed Content问题)
+    // 代理请求 (解决Mixed Content和CORS问题)
     if (request.action === 'fetchUrl') {
         fetch(request.url)
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) throw new Error('HTTP ' + response.status);
-                return response.arrayBuffer();
-            })
-            .then(buffer => {
+                const contentType = response.headers.get('content-type') || 'application/octet-stream';
+                const buffer = await response.arrayBuffer();
+
                 // 转Base64返回
                 let binary = '';
                 const bytes = new Uint8Array(buffer);
@@ -47,7 +48,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     binary += String.fromCharCode(bytes[i]);
                 }
                 const base64 = btoa(binary);
-                sendResponse({ success: true, data: base64 });
+
+                sendResponse({
+                    success: true,
+                    data: base64,
+                    type: contentType
+                });
             })
             .catch(error => {
                 console.error('[Background] Fetch failed:', error);

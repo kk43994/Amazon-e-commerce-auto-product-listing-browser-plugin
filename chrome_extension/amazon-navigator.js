@@ -140,7 +140,7 @@ class AmazonNavigator {
         console.log('✓ 已点击"添加商品"按钮');
 
         // 等待页面加载
-        await this.waitForPageChange('/add-product', 5000);
+        await this.waitForPageChange('/add-product', 15000);
         console.log('✓ 添加商品页面已加载');
 
         return true;
