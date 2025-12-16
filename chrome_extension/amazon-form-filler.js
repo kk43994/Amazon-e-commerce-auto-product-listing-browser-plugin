@@ -543,6 +543,10 @@ async function fillProductDetailsPage(data, options) {
 async function fillSafetyCompliancePage(data, options) {
     console.log('[安全与合规页] 开始填写');
 
+    // 切换到"所有属性"视图
+    await switchToAllAttributesView();
+    await sleep(500);
+
     const fields = [
         { key: 'country_of_origin', value: data.country_of_origin },
         { key: 'warranty', value: data.warranty },
@@ -585,6 +589,10 @@ async function fillSafetyCompliancePage(data, options) {
  */
 async function fillOfferPage(data, options) {
     console.log('[报价页] 开始填写');
+
+    // 切换到"所有属性"视图
+    await switchToAllAttributesView();
+    await sleep(500);
 
     const fields = [
         { key: 'sku', value: data.sku },
@@ -630,9 +638,374 @@ async function fillOfferPage(data, options) {
     }
 
     // 选择配送渠道
-    await selectFulfillmentChannel(data.fulfillment_channel || 'FBM');
+    console.log('>>> [报价页] 准备调用配送渠道选择函数...');
+    console.log('>>> [报价页] fulfillment_channel 值:', data.fulfillment_channel);
+    try {
+        await selectFulfillmentChannel(data.fulfillment_channel || 'FBM');
+        console.log('>>> [报价页] 配送渠道选择完成');
+    } catch (e) {
+        console.error('>>> [报价页] 配送渠道选择失败:', e);
+    }
 
     console.log('[报价页] 填写完成');
+}
+
+/**
+ * 选择配送渠道 (Fulfillment Channel)
+ * @param {string} channel - 'FBM' (Merchant Fulfilled) 或 'FBA' (Fulfilled by Amazon)
+ */
+async function selectFulfillmentChannel(channel = 'FBM') {
+    console.log(`[配送渠道] 选择: ${channel}`);
+
+    const isFBM = channel.toUpperCase() === 'FBM' ||
+        channel.toLowerCase().includes('merchant') ||
+        channel.toLowerCase().includes('myself');
+
+    // 定义搜索关键词 (小写)
+    const fbmKeywords = [
+        'i will ship this item myself',
+        'merchant fulfilled',
+        'i will ship',
+        '卖家自行配送',
+        '我将自行配送',
+        '自行配送此商品',
+        '自己で配送',
+        '出品者から出荷'
+    ];
+    const fbaKeywords = [
+        'amazon will ship',
+        'fulfilled by amazon',
+        'fba',
+        '亚马逊配送',
+        '亚马逊将会配送',
+        'amazonが配送',
+        'フルフィルメント by amazon'
+    ];
+
+    const targetKeywords = isFBM ? fbmKeywords : fbaKeywords;
+    console.log(`[配送渠道] 搜索: ${isFBM ? 'FBM' : 'FBA'}, 关键词: ${targetKeywords.slice(0, 3).join(', ')}`);
+
+    // 方法1: 直接通过 name="offerFulfillment" 查找 (参考礼品选项的成功方式)
+    console.log('[配送渠道] 通过 name="offerFulfillment" 查找...');
+
+    // 查找所有 kat-radiobutton[name="offerFulfillment"]
+    const fulfillmentRadios = document.querySelectorAll('kat-radiobutton[name="offerFulfillment"]');
+    console.log(`[配送渠道] 找到 ${fulfillmentRadios.length} 个 offerFulfillment radio`);
+
+    for (const radioBtn of fulfillmentRadios) {
+        const label = (radioBtn.getAttribute('label') || '').toLowerCase();
+        const katAriaLabel = (radioBtn.getAttribute('kat-aria-label') || '').toLowerCase();
+        const value = radioBtn.getAttribute('value') || '';
+
+        console.log(`[配送渠道] 检查: label="${label}", value="${value}"`);
+
+        // 匹配关键词或value (MFN=FBM, AFN=FBA)
+        const matchesByKeyword = targetKeywords.some(keyword => label.includes(keyword) || katAriaLabel.includes(keyword));
+        const matchesByValue = (isFBM && value === 'MFN') || (!isFBM && value === 'AFN');
+
+        if (matchesByKeyword || matchesByValue) {
+            console.log(`[配送渠道] ✓ 找到匹配: label="${radioBtn.getAttribute('label')}", value="${value}"`);
+
+            // 滚动到元素
+            radioBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await sleep(200);
+
+            // 关键修复: input 是 kat-radiobutton 的子元素 (slot="radio")，不在 Shadow DOM 中！
+            const innerRadio = radioBtn.querySelector('input[type="radio"]');
+            if (innerRadio) {
+                console.log('[配送渠道] 找到子元素 input[type="radio"]，开始点击...');
+
+                // 多重点击策略
+                innerRadio.click();
+                innerRadio.checked = true;
+                innerRadio.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                innerRadio.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+
+                console.log('[配送渠道] ✓ 已选择 input radio');
+            } else {
+                // 备用: 点击 kat-radiobutton 组件本身
+                console.log('[配送渠道] 未找到内部input，点击 kat-radiobutton 本身');
+                radioBtn.click();
+            }
+
+            console.log('[配送渠道] ✓ 已选择 (offerFulfillment)');
+            await sleep(500);
+            return;
+        }
+    }
+
+    // 方法2: 查找 kat-radiobutton (不限定 name, 通过 label 匹配)
+    console.log('[配送渠道] 查找所有 kat-radiobutton 组件...');
+    const allRadioButtons = document.querySelectorAll('kat-radiobutton');
+    for (const radioBtn of allRadioButtons) {
+        const label = (radioBtn.getAttribute('label') || '').toLowerCase();
+        const text = (radioBtn.textContent || '').toLowerCase();
+        const matches = targetKeywords.some(keyword => label.includes(keyword) || text.includes(keyword));
+
+        if (matches) {
+            console.log(`[配送渠道] 找到匹配的 kat-radiobutton: label="${radioBtn.getAttribute('label')}"`);
+
+            radioBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await sleep(200);
+
+            radioBtn.click();
+
+            if (radioBtn.shadowRoot) {
+                const innerRadio = radioBtn.shadowRoot.querySelector('input[type="radio"]');
+                if (innerRadio) {
+                    innerRadio.click();
+                    innerRadio.checked = true;
+                    innerRadio.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                    innerRadio.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                }
+            }
+
+            console.log('[配送渠道] ✓ 已选择 (kat-radiobutton)');
+            await sleep(500);
+            return;
+        }
+    }
+
+    // 方法3: 查找kat-box-toggle组件（Amazon常用）
+    const boxToggles = document.querySelectorAll('kat-box-toggle');
+    for (const toggle of boxToggles) {
+        const text = (toggle.textContent || toggle.getAttribute('label') || '').toLowerCase();
+        const matches = targetKeywords.some(keyword => text.includes(keyword));
+        if (matches) {
+            console.log(`[配送渠道] 找到 kat-box-toggle，点击中...`);
+            toggle.click();
+            await sleep(500);
+            return;
+        }
+    }
+
+    // 方法2: 使用Shadow DOM遍历查找
+    console.log('[配送渠道] 使用Shadow DOM遍历查找...');
+
+    // 定义Shadow DOM遍历函数
+    const findInShadowDOM = (root, predicate) => {
+        const elements = root.querySelectorAll('*');
+        for (const el of elements) {
+            if (predicate(el)) return el;
+            if (el.shadowRoot) {
+                const found = findInShadowDOM(el.shadowRoot, predicate);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    // 在Shadow DOM中查找包含关键词的元素
+    const matchedElement = findInShadowDOM(document, el => {
+        const text = (el.textContent || '').toLowerCase();
+        const label = (el.getAttribute('label') || '').toLowerCase();
+        return targetKeywords.some(keyword => text.includes(keyword) || label.includes(keyword));
+    });
+
+    if (matchedElement) {
+        console.log(`[配送渠道] 在Shadow DOM中找到: <${matchedElement.tagName}>`);
+
+        // 尝试在该元素及其祖先中找到radio
+        let radioFound = false;
+        let current = matchedElement;
+        for (let i = 0; i < 10 && current && !radioFound; i++) {
+            // 检查当前元素是否是radio
+            if (current.tagName === 'INPUT' && current.type === 'radio') {
+                current.click();
+                current.checked = true;
+                current.dispatchEvent(new Event('change', { bubbles: true }));
+                console.log('[配送渠道] ✓ 已选择 (Shadow DOM radio)');
+                await sleep(500);
+                return;
+            }
+
+            // 检查是否是kat-radio-button
+            if (current.tagName === 'KAT-RADIO-BUTTON' || current.tagName === 'KAT-RADIO') {
+                current.click();
+                if (current.shadowRoot) {
+                    const innerRadio = current.shadowRoot.querySelector('input[type="radio"]');
+                    if (innerRadio) innerRadio.click();
+                }
+                console.log('[配送渠道] ✓ 已选择 (Shadow DOM kat-radio)');
+                await sleep(500);
+                return;
+            }
+
+            // 查找内部或相邻的radio
+            const radio = current.querySelector?.('input[type="radio"]');
+            if (radio) {
+                radio.click();
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+                console.log('[配送渠道] ✓ 已选择 (Shadow DOM内部radio)');
+                await sleep(500);
+                return;
+            }
+
+            current = current.parentElement;
+        }
+
+        // 直接点击找到的元素
+        console.log('[配送渠道] 直接点击匹配的元素');
+        matchedElement.click();
+        await sleep(500);
+        return;
+    }
+
+    // 方法3: 通过文本内容查找包含关键词的父容器，然后找到其中的radio
+    console.log('[配送渠道] 使用普通DOM文本匹配方式查找...');
+
+    // 获取所有文本节点并找到包含关键词的元素
+    const allTextContainers = document.querySelectorAll('div, span, label, p');
+    for (const container of allTextContainers) {
+        const text = (container.textContent || '').toLowerCase();
+        const matches = targetKeywords.some(keyword => text.includes(keyword));
+        if (!matches) continue;
+
+        // 找到了包含关键词的容器，现在查找相关的radio按钮
+        console.log(`[配送渠道] 找到包含关键词的容器: "${text.substring(0, 50)}..."`);
+
+        // 策略1: 在容器内部查找radio
+        let radio = container.querySelector('input[type="radio"]');
+
+        // 策略2: 在父元素或祖父元素中查找radio
+        if (!radio) {
+            let parent = container.parentElement;
+            for (let i = 0; i < 5 && parent && !radio; i++) {
+                radio = parent.querySelector('input[type="radio"]');
+                parent = parent.parentElement;
+            }
+        }
+
+        // 策略3: 查找同级元素中的radio
+        if (!radio && container.parentElement) {
+            const siblings = container.parentElement.children;
+            for (const sibling of siblings) {
+                radio = sibling.querySelector('input[type="radio"]') ||
+                    (sibling.tagName === 'INPUT' && sibling.type === 'radio' ? sibling : null);
+                if (radio) break;
+            }
+        }
+
+        if (radio) {
+            console.log(`[配送渠道] 找到关联的radio按钮`);
+            radio.click();
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+            radio.dispatchEvent(new Event('input', { bubbles: true }));
+            console.log('[配送渠道] ✓ 已选择 (通过文本匹配)');
+            await sleep(500);
+            return;
+        }
+
+        // 如果没找到radio，尝试直接点击这个容器
+        console.log('[配送渠道] 未找到radio，尝试直接点击容器');
+        container.click();
+        await sleep(500);
+        return;
+    }
+
+    // 查找所有单选按钮和相关元素
+    const allElements = document.querySelectorAll('input[type="radio"], kat-radio-button, kat-radio, kat-label, [role="radio"], label, span, div');
+
+    for (const el of allElements) {
+        const text = (el.textContent || el.getAttribute('label') || '').toLowerCase();
+
+        // 检查是否包含目标关键词 (已经是小写)
+        const matches = targetKeywords.some(keyword => text.includes(keyword));
+        if (!matches) continue;
+
+        // 找到匹配的元素，尝试点击
+        console.log(`[配送渠道] 找到匹配元素: "${text.substring(0, 50)}..."`);
+
+        // 如果是radio input，直接点击
+        if (el.tagName === 'INPUT' && el.type === 'radio') {
+            el.click();
+            el.checked = true;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('[配送渠道] 已选择 (input radio)');
+            await sleep(500);
+            return;
+        }
+
+        // 如果是kat-radio-button
+        if (el.tagName === 'KAT-RADIO-BUTTON') {
+            el.click();
+            if (el.shadowRoot) {
+                const innerInput = el.shadowRoot.querySelector('input');
+                if (innerInput) {
+                    innerInput.click();
+                }
+            }
+            console.log('[配送渠道] 已选择 (kat-radio-button)');
+            await sleep(500);
+            return;
+        }
+
+        // 如果是kat-label（Amazon自定义标签）
+        if (el.tagName === 'KAT-LABEL') {
+            console.log('[配送渠道] 找到 kat-label，尝试点击');
+            // 获取for属性指向的元素ID
+            const forId = el.getAttribute('for');
+            if (forId) {
+                const targetInput = document.getElementById(forId);
+                if (targetInput) {
+                    targetInput.click();
+                    if (targetInput.type === 'radio') {
+                        targetInput.checked = true;
+                        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    console.log(`[配送渠道] 已点击 for=${forId} 的目标元素`);
+                    await sleep(500);
+                    return;
+                }
+            }
+            // 如果没有for属性，直接点击label
+            el.click();
+            console.log('[配送渠道] 已点击 kat-label');
+            await sleep(500);
+            return;
+        }
+
+        // 如果是label或其他包装元素，尝试点击它
+        if (['LABEL', 'SPAN', 'DIV'].includes(el.tagName)) {
+            // 先检查for属性
+            const forId = el.getAttribute('for');
+            if (forId) {
+                const targetInput = document.getElementById(forId);
+                if (targetInput) {
+                    targetInput.click();
+                    if (targetInput.type === 'radio') {
+                        targetInput.checked = true;
+                        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    console.log(`[配送渠道] 已点击 for=${forId} 的目标元素`);
+                    await sleep(500);
+                    return;
+                }
+            }
+
+            // 查找内部或相邻的radio
+            const radio = el.querySelector('input[type="radio"]') ||
+                el.parentElement?.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.click();
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+                console.log('[配送渠道] 已选择 (via label)');
+                await sleep(500);
+                return;
+            }
+
+            // 直接点击元素
+            el.click();
+            console.log('[配送渠道] 已点击包装元素');
+            await sleep(500);
+            return;
+        }
+    }
+
+    console.warn(`[配送渠道] 未找到 ${channel} 选项`);
 }
 
 /**
@@ -641,6 +1014,10 @@ async function fillOfferPage(data, options) {
  */
 async function fillVariationsPage(data, options) {
     console.log('[变体页] 开始填写');
+
+    // 切换到"所有属性"视图
+    await switchToAllAttributesView();
+    await sleep(500);
 
     // 支持多行变体模式: data.variations 是数组
     const variations = data.variations || [data];
@@ -855,10 +1232,11 @@ async function fillVariationsPage(data, options) {
                 await fillField(priceInput, varData.your_price || varData.sale_price, options);
             }
 
-            // SKU
+            // SKU - 使用变体专用SKU (variation_sku)，如果没有则fallback到sku
             const skuInput = document.querySelector(`[id*="contribution_sku"][id$="${matchedSuffix}"], [id*="sku"][id$="${matchedSuffix}"]`);
-            if (skuInput && varData.sku) {
-                await fillField(skuInput, varData.sku, options);
+            const variationSku = varData.variation_sku || varData.sku;
+            if (skuInput && variationSku) {
+                await fillField(skuInput, variationSku, options);
             }
 
             // Quantity
@@ -867,26 +1245,32 @@ async function fillVariationsPage(data, options) {
                 await fillField(qtyInput, varData.quantity, options);
             }
 
-            // External ID
+            // External ID - 使用变体专用ID (variation_external_product_id)
             const extIdInput = document.querySelector(`[id*="externally_assigned_product_identifier"][id$="${matchedSuffix}"], [id*="external_product_id"][id$="${matchedSuffix}"]`);
-            if (extIdInput && varData.external_product_id) {
-                await fillField(extIdInput, varData.external_product_id, options);
+            const variationExtId = varData.variation_external_product_id || varData.external_product_id;
+            if (extIdInput && variationExtId) {
+                await fillField(extIdInput, variationExtId, options);
             }
 
-            // External ID Type
+            // External ID Type - 使用变体专用类型，默认UPC/EAN/GTIN
             const extIdTypeInput = document.querySelector(`[id*="external_product_id_type"][id$="${matchedSuffix}"]`);
-            if (extIdTypeInput && varData.external_product_id_type) {
-                await fillField(extIdTypeInput, varData.external_product_id_type, options);
+            const variationExtIdType = varData.variation_external_product_id_type || 'UPC/EAN/GTIN';
+            if (extIdTypeInput) {
+                await fillField(extIdTypeInput, variationExtIdType, options);
             }
 
-            // Condition
+            // Condition - 使用变体专用状况，默认New
             const condInput = document.querySelector(`[id*="condition"][id$="${matchedSuffix}"]`);
-            if (condInput && varData.condition) {
-                await fillField(condInput, varData.condition, options);
+            const variationCondition = varData.variation_condition || 'New';
+            if (condInput) {
+                await fillField(condInput, variationCondition, options);
             }
 
         } else {
-            console.warn(`[变体页] 无法定位变体 "${varData.item_name}" 的矩阵行`);
+            console.warn(`[变体页] 无法定位变体 "${varData.item_name}" 的矩阵行，尝试备用方法`);
+
+            // 备用方法：直接通过标签文本查找下拉框
+            await fillVariationDropdownsByLabel(varData, options);
         }
     }
 
@@ -894,10 +1278,88 @@ async function fillVariationsPage(data, options) {
 }
 
 /**
+ * 备用方法：通过标签文本查找并填写变体页的下拉框
+ */
+async function fillVariationDropdownsByLabel(varData, options) {
+    console.log('[变体页备用] 开始通过标签查找下拉框');
+
+    // External Product ID Type - 使用变体专用类型，默认UPC/EAN/GTIN
+    const variationExtIdType = varData.variation_external_product_id_type || 'UPC/EAN/GTIN';
+    const extTypeDropdown = findDropdownByLabel(['External Product ID Type', '外部产品 ID 类型', '外部商品ID']);
+    if (extTypeDropdown) {
+        console.log(`[变体页备用] 找到 External Product ID Type 下拉框，填写: ${variationExtIdType}`);
+        await fillDropdown(extTypeDropdown, variationExtIdType);
+        await sleep(500);
+    } else {
+        console.warn('[变体页备用] 未找到 External Product ID Type 下拉框');
+    }
+
+    // Item Condition - 使用变体专用状况，默认New
+    const variationCondition = varData.variation_condition || 'New';
+    const condDropdown = findDropdownByLabel(['Item Condition', 'Condition', '商品状況', 'コンディション']);
+    if (condDropdown) {
+        console.log(`[变体页备用] 找到 Item Condition 下拉框，填写: ${variationCondition}`);
+        await fillDropdown(condDropdown, variationCondition);
+        await sleep(500);
+    } else {
+        console.warn('[变体页备用] 未找到 Item Condition 下拉框');
+    }
+}
+
+/**
+ * 通过标签文本查找下拉框
+ */
+function findDropdownByLabel(labels) {
+    // 查找所有可能的标签元素
+    const allLabels = document.querySelectorAll('label, kat-label, span, div');
+
+    for (const labelEl of allLabels) {
+        const text = labelEl.textContent.trim();
+
+        // 检查是否匹配任一标签
+        const matches = labels.some(l => text.includes(l));
+        if (!matches) continue;
+
+        // 查找关联的下拉框
+        // 方法1: for属性
+        const forId = labelEl.getAttribute('for');
+        if (forId) {
+            const dropdown = document.getElementById(forId);
+            if (dropdown) return dropdown;
+        }
+
+        // 方法2: 父级容器内的下拉框
+        let parent = labelEl.parentElement;
+        for (let i = 0; i < 5 && parent; i++) {
+            const dropdown = parent.querySelector('select, kat-select, kat-dropdown, [role="listbox"], [role="combobox"]');
+            if (dropdown) return dropdown;
+            parent = parent.parentElement;
+        }
+
+        // 方法3: 紧邻的下一个元素
+        let sibling = labelEl.nextElementSibling;
+        while (sibling) {
+            if (sibling.tagName === 'SELECT' ||
+                sibling.tagName.includes('KAT-') ||
+                sibling.getAttribute('role') === 'listbox') {
+                return sibling;
+            }
+            sibling = sibling.nextElementSibling;
+        }
+    }
+
+    return null;
+}
+
+/**
  * 填写图片页
  */
 async function fillImagesPage(data) {
     console.log('[图片页] 开始上传图片');
+
+    // 切换到"所有属性"视图
+    await switchToAllAttributesView();
+    await sleep(500);
 
     const images = [];
     if (data.main_image) images.push({ name: '主图片', path: data.main_image, index: 0 });
@@ -1629,28 +2091,77 @@ async function selectRadioOption(element, value) {
  * 切换到"所有属性"视图
  */
 async function switchToAllAttributesView() {
-    console.log('[切换视图] 所有属性');
+    console.log('[切换视图] 切换到所有属性...');
 
-    // 查找"所有属性"单选按钮
-    const radioButtons = document.querySelectorAll('input[type="radio"], kat-radio, kat-checkbox');
+    // 1. 精确查找 (根据控制台分析结果)
+    // value="ALL_ATTRIBUTES_VIEW_MODE" 或 name="attribute_filter_radio_buttons-all"
+    const targetSelector = 'kat-radiobutton[value="ALL_ATTRIBUTES_VIEW_MODE"], kat-radiobutton[name="attribute_filter_radio_buttons-all"]';
+    const preciseMatch = document.querySelector(targetSelector);
 
+    if (preciseMatch) {
+        console.log('[切换视图] 找到精确匹配 (Value/Name):', preciseMatch);
+
+        // 尝试点击内部 input (slot="radio")
+        const innerRadio = preciseMatch.querySelector('input[type="radio"]');
+        if (innerRadio) {
+            console.log('[切换视图] 点击内部 input...');
+            innerRadio.click();
+            innerRadio.checked = true;
+            innerRadio.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+        } else {
+            console.log('[切换视图] 点击组件本身...');
+            preciseMatch.click();
+        }
+
+        await sleep(500);
+        return true;
+    }
+
+    // 2. 模糊查找 (作为后备)
+    const keywords = ['所有属性', 'すべての属性', 'All attributes', 'all attributes'];
+
+    // 查找 kat-radiobutton
+    const katRadios = document.querySelectorAll('kat-radiobutton');
+    for (const radioBtn of katRadios) {
+        const label = (radioBtn.getAttribute('label') || '').toLowerCase();
+        const text = (radioBtn.textContent || '').toLowerCase();
+
+        const matches = keywords.some(keyword =>
+            label.includes(keyword.toLowerCase()) || text.includes(keyword.toLowerCase())
+        );
+
+        if (matches) {
+            console.log(`[切换视图] 找到 kat-radiobutton (Label匹配): "${radioBtn.getAttribute('label')}"`);
+
+            const innerRadio = radioBtn.querySelector('input[type="radio"]');
+            if (innerRadio) {
+                innerRadio.click();
+                innerRadio.checked = true;
+                innerRadio.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+            } else {
+                radioBtn.click();
+            }
+            return true;
+        }
+    }
+
+    // 查找普通 input[type="radio"]
+    const radioButtons = document.querySelectorAll('input[type="radio"], kat-radio');
     for (const radio of radioButtons) {
-        // 检查 label
         const label = radio.nextElementSibling || radio.parentElement;
         if (label) {
             const text = label.textContent.trim();
-            if (text.includes('所有属性') || text.includes('すべての属性') || text.includes('All attributes')) {
+            if (keywords.some(keyword => text.includes(keyword))) {
                 radio.click();
-                console.log('[切换视图] 已切换到所有属性 (Label匹配)');
+                console.log('[切换视图] ✓ 已切换到所有属性 (Label匹配)');
                 return true;
             }
         }
 
-        // 检查 radio 自身的 title 或 aria-label 或 label 属性 (kat-radio)
         const title = radio.title || radio.getAttribute('label') || '';
-        if (title && (title.includes('所有属性') || title.includes('すべての属性'))) {
+        if (keywords.some(keyword => title.includes(keyword))) {
             radio.click();
-            console.log('[切换视图] 已切换到所有属性 (Title/Attribute匹配)');
+            console.log('[切换视图] ✓ 已切换到所有属性 (Title匹配)');
             return true;
         }
     }
@@ -1659,25 +2170,7 @@ async function switchToAllAttributesView() {
     return false;
 }
 
-/**
- * 选择配送渠道
- */
-async function selectFulfillmentChannel(channel) {
-    const text = channel === 'FBM' ? '我将自行配送此商品' : '亚马逊将会配送并提供客户服务';
-
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
-    for (const radio of radioButtons) {
-        const label = radio.nextElementSibling || radio.parentElement;
-        if (label && label.textContent.includes(text)) {
-            radio.click();
-            console.log(`[配送渠道] 已选择: ${text}`);
-            return true;
-        }
-    }
-
-    console.warn('[配送渠道] 未找到选项');
-    return false;
-}
+// 注意: selectFulfillmentChannel 函数已在第648行定义，此处不再重复定义
 
 /**
  * 显示图片上传指南

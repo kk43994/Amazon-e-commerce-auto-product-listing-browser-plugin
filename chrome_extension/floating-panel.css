@@ -1,5 +1,5 @@
-/* 亚马逊助手悬浮面板样式 - Premium Glass Theme */
-.ziniao-floating-panel {
+﻿/* 亚马逊助手悬浮面板样式 - Premium Glass Theme */
+.amazon-helper-floating-panel {
     position: fixed;
     top: 20px;
     right: 20px;
@@ -18,7 +18,7 @@
 }
 
 /* 最小化状态 */
-.ziniao-floating-panel.minimized {
+.amazon-helper-floating-panel.minimized {
     width: 60px;
     height: 60px;
     border-radius: 30px;
@@ -47,7 +47,7 @@
 }
 
 /* 头部 */
-.ziniao-panel-header {
+.amazon-helper-panel-header {
     background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(217, 70, 239, 0.15) 100%);
     padding: 18px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -57,7 +57,7 @@
     cursor: move;
 }
 
-.ziniao-panel-title {
+.amazon-helper-panel-title {
     font-size: 15px;
     font-weight: 700;
     display: flex;
@@ -68,12 +68,12 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.ziniao-panel-controls {
+.amazon-helper-panel-controls {
     display: flex;
     gap: 8px;
 }
 
-.ziniao-control-btn {
+.amazon-helper-control-btn {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #cbd5e1;
@@ -88,22 +88,22 @@
     transition: all 0.2s;
 }
 
-.ziniao-control-btn:hover {
+.amazon-helper-control-btn:hover {
     background: rgba(255, 255, 255, 0.25);
     color: #fff;
     transform: scale(1.1);
 }
 
 /* 内容区 */
-.ziniao-panel-content {
+.amazon-helper-panel-content {
     padding: 24px;
 }
 
-.ziniao-status-row {
+.amazon-helper-status-row {
     margin-bottom: 20px;
 }
 
-.ziniao-label {
+.amazon-helper-label {
     font-size: 12px;
     color: #94a3b8;
     margin-bottom: 8px;
@@ -112,7 +112,7 @@
     font-weight: 600;
 }
 
-.ziniao-value {
+.amazon-helper-value {
     font-size: 16px;
     font-weight: 600;
     color: #fff;
@@ -126,7 +126,7 @@
 }
 
 /* 进度条 */
-.ziniao-progress-bar {
+.amazon-helper-progress-bar {
     height: 6px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
@@ -135,7 +135,7 @@
     position: relative;
 }
 
-.ziniao-progress-fill {
+.amazon-helper-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #6366f1, #d946ef);
     width: 0%;
@@ -144,7 +144,7 @@
     position: relative;
 }
 
-.ziniao-progress-fill::after {
+.amazon-helper-progress-fill::after {
     content: '';
     position: absolute;
     top: 0;
@@ -163,13 +163,13 @@
 }
 
 /* 按钮组 */
-.ziniao-action-buttons {
+.amazon-helper-action-buttons {
     display: flex;
     gap: 12px;
     margin-top: 24px;
 }
 
-.ziniao-btn {
+.amazon-helper-btn {
     flex: 1;
     padding: 12px;
     border: none;
@@ -186,32 +186,32 @@
     letter-spacing: 0.5px;
 }
 
-.ziniao-btn-pause {
+.amazon-helper-btn-pause {
     background: rgba(251, 191, 36, 0.15);
     color: #fbbf24;
     border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
-.ziniao-btn-pause:hover {
+.amazon-helper-btn-pause:hover {
     background: rgba(251, 191, 36, 0.25);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
 }
 
-.ziniao-btn-stop {
+.amazon-helper-btn-stop {
     background: rgba(248, 113, 113, 0.15);
     color: #f87171;
     border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
-.ziniao-btn-stop:hover {
+.amazon-helper-btn-stop:hover {
     background: rgba(248, 113, 113, 0.25);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
 }
 
 /* 最小化图标 */
-.ziniao-minimized-icon {
+.amazon-helper-minimized-icon {
     display: none;
     width: 100%;
     height: 100%;
@@ -222,17 +222,17 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-.ziniao-floating-panel.minimized .ziniao-minimized-icon {
+.amazon-helper-floating-panel.minimized .amazon-helper-minimized-icon {
     display: flex;
 }
 
-.ziniao-floating-panel.minimized .ziniao-panel-header,
-.ziniao-floating-panel.minimized .ziniao-panel-content {
+.amazon-helper-floating-panel.minimized .amazon-helper-panel-header,
+.amazon-helper-floating-panel.minimized .amazon-helper-panel-content {
     display: none;
 }
 
 /* 开发者控制台 */
-.ziniao-dev-console {
+.amazon-helper-dev-console {
     margin-top: 15px;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 8px;
@@ -243,7 +243,7 @@
     /* 默认隐藏 */
 }
 
-.ziniao-console-header {
+.amazon-helper-console-header {
     padding: 8px 12px;
     background: rgba(255, 255, 255, 0.05);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -253,7 +253,7 @@
     color: #94a3b8;
 }
 
-.ziniao-console-body {
+.amazon-helper-console-body {
     height: 150px;
     overflow-y: auto;
     padding: 8px;
@@ -261,20 +261,20 @@
 }
 
 /* 自定义滚动条 */
-.ziniao-console-body::-webkit-scrollbar {
+.amazon-helper-console-body::-webkit-scrollbar {
     width: 6px;
 }
 
-.ziniao-console-body::-webkit-scrollbar-track {
+.amazon-helper-console-body::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
 }
 
-.ziniao-console-body::-webkit-scrollbar-thumb {
+.amazon-helper-console-body::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
 }
 
-.ziniao-log-entry {
+.amazon-helper-log-entry {
     margin-bottom: 4px;
     line-height: 1.4;
     word-break: break-all;
@@ -282,24 +282,24 @@
     padding-bottom: 2px;
 }
 
-.ziniao-log-time {
+.amazon-helper-log-time {
     color: #64748b;
     margin-right: 6px;
     font-size: 10px;
 }
 
-.ziniao-log-info {
+.amazon-helper-log-info {
     color: #e2e8f0;
 }
 
-.ziniao-log-warn {
+.amazon-helper-log-warn {
     color: #fbbf24;
 }
 
-.ziniao-log-error {
+.amazon-helper-log-error {
     color: #f87171;
 }
 
-.ziniao-log-success {
+.amazon-helper-log-success {
     color: #4caf50;
 }

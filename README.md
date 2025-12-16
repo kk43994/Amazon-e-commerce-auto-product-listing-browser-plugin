@@ -92,6 +92,17 @@ https://github.com/kk43994/Amazon-e-commerce-auto-product-listing-browser-plugin
 4. 点击"开始全自动上传" → 完成！
 ```
 
+### 5. 图片上传
+
+在CSV中直接填写图片的URL链接即可：
+
+| 字段 | 填写示例 |
+|------|----------|
+| `main_image` | `https://example.com/main.jpg` |
+| `image_1` | `https://example.com/pic1.jpg` |
+
+> **提示**：支持任意图床URL，如阿里云OSS、腾讯COS、imgur等
+
 ---
 
 ## 📋 支持的字段（78个）

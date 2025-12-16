@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 悬浮面板控制器
  * 功能：在页面上显示持久化悬浮窗，管理跨页面自动化流程
  */
@@ -260,72 +260,72 @@ class FloatingPanel {
 
     render() {
         // 如果已存在，先移除
-        if (document.getElementById('ziniao-floating-panel')) {
+        if (document.getElementById('amazon-helper-floating-panel')) {
             return;
         }
 
         const html = `
-            <div id="ziniao-floating-panel" class="ziniao-floating-panel">
-                <div class="ziniao-minimized-icon">🚀</div>
-                <div class="ziniao-panel-header">
-                    <div class="ziniao-panel-title">
+            <div id="amazon-helper-floating-panel" class="amazon-helper-floating-panel">
+                <div class="amazon-helper-minimized-icon">🚀</div>
+                <div class="amazon-helper-panel-header">
+                    <div class="amazon-helper-panel-title">
                         <span>🚀</span>
                         <span>亚马逊助手</span>
                     </div>
-                    <div class="ziniao-panel-controls">
-                        <button class="ziniao-control-btn" id="ziniao-min-btn">_</button>
+                    <div class="amazon-helper-panel-controls">
+                        <button class="amazon-helper-control-btn" id="amazon-helper-min-btn">_</button>
                     </div>
                 </div>
-                <div class="ziniao-panel-content">
-                    <div class="ziniao-status-row">
-                        <div class="ziniao-label">当前任务</div>
-                        <div class="ziniao-value" id="ziniao-task-name">
+                <div class="amazon-helper-panel-content">
+                    <div class="amazon-helper-status-row">
+                        <div class="amazon-helper-label">当前任务</div>
+                        <div class="amazon-helper-value" id="amazon-helper-task-name">
                             ${this.state.currentProduct ? (this.state.currentProduct.title || this.state.currentProduct.asin) : '无任务'}
                         </div>
                     </div>
-                    <div class="ziniao-status-row">
-                        <div class="ziniao-label">状态</div>
-                        <div class="ziniao-value" id="ziniao-status-text">${this.state.statusText}</div>
+                    <div class="amazon-helper-status-row">
+                        <div class="amazon-helper-label">状态</div>
+                        <div class="amazon-helper-value" id="amazon-helper-status-text">${this.state.statusText}</div>
                     </div>
-                    <div class="ziniao-status-row" style="margin-top: 5px; font-size: 11px; opacity: 0.8;">
-                        <div class="ziniao-label">当前页面</div>
-                        <div class="ziniao-value" id="ziniao-page-type">检测中...</div>
+                    <div class="amazon-helper-status-row" style="margin-top: 5px; font-size: 11px; opacity: 0.8;">
+                        <div class="amazon-helper-label">当前页面</div>
+                        <div class="amazon-helper-value" id="amazon-helper-page-type">检测中...</div>
                     </div>
-                    <div class="ziniao-progress-bar">
-                        <div class="ziniao-progress-fill" id="ziniao-progress" style="width: ${this.calculateProgress()}%"></div>
+                    <div class="amazon-helper-progress-bar">
+                        <div class="amazon-helper-progress-fill" id="amazon-helper-progress" style="width: ${this.calculateProgress()}%"></div>
                     </div>
-                    <div class="ziniao-label" style="text-align: right">
-                        <span id="ziniao-counter">${this.state.currentIndex + 1}</span> / ${this.state.totalProducts}
+                    <div class="amazon-helper-label" style="text-align: right">
+                        <span id="amazon-helper-counter">${this.state.currentIndex + 1}</span> / ${this.state.totalProducts}
                     </div>
-                    <div class="ziniao-action-buttons">
-                        <button class="ziniao-btn ziniao-btn-pause" id="ziniao-pause-btn">
+                    <div class="amazon-helper-action-buttons">
+                        <button class="amazon-helper-btn amazon-helper-btn-pause" id="amazon-helper-pause-btn">
                             ${this.state.isPaused ? '继续' : '暂停'}
                         </button>
-                        <button class="ziniao-btn" id="ziniao-skip-btn" style="background: rgba(255, 255, 255, 0.1); color: #fff;">跳过</button>
-                        <button class="ziniao-btn ziniao-btn-stop" id="ziniao-stop-btn">停止</button>
+                        <button class="amazon-helper-btn" id="amazon-helper-skip-btn" style="background: rgba(255, 255, 255, 0.1); color: #fff;">跳过</button>
+                        <button class="amazon-helper-btn amazon-helper-btn-stop" id="amazon-helper-stop-btn">停止</button>
                     </div>
                     
                     <!-- 简易设置开关 -->
-                    <div class="ziniao-settings-toggle" id="ziniao-settings-toggle" style="margin-top: 10px; text-align: center; font-size: 12px; color: #94a3b8; cursor: pointer;">
+                    <div class="amazon-helper-settings-toggle" id="amazon-helper-settings-toggle" style="margin-top: 10px; text-align: center; font-size: 12px; color: #94a3b8; cursor: pointer;">
                         ⚙️ 调整设置
                     </div>
 
                     
                     <!-- 开发者控制台 -->
-                    <div class="ziniao-dev-console" id="ziniao-dev-console">
-                        <div class="ziniao-console-header">
+                    <div class="amazon-helper-dev-console" id="amazon-helper-dev-console">
+                        <div class="amazon-helper-console-header">
                             <span>运行日志</span>
                             <div style="display: flex; gap: 8px;">
-                                <span style="cursor: pointer; font-size: 10px;" id="ziniao-dump-structure">分析页面</span>
-                                <span style="cursor: pointer; font-size: 10px;" id="ziniao-clear-logs">清除</span>
+                                <span style="cursor: pointer; font-size: 10px;" id="amazon-helper-dump-structure">分析页面</span>
+                                <span style="cursor: pointer; font-size: 10px;" id="amazon-helper-clear-logs">清除</span>
                             </div>
                         </div>
-                        <div class="ziniao-console-body" id="ziniao-console-body">
+                        <div class="amazon-helper-console-body" id="amazon-helper-console-body">
                             <!-- 日志内容 -->
                         </div>
                     </div>
 
-                    <div class="ziniao-settings-panel" id="ziniao-settings-panel" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                    <div class="amazon-helper-settings-panel" id="amazon-helper-settings-panel" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                             <span>自动翻页</span>
                             <input type="checkbox" id="fp-autoNavigate" checked>
@@ -344,22 +344,22 @@ class FloatingPanel {
         `;
 
         document.body.insertAdjacentHTML('beforeend', html);
-        this.panel = document.getElementById('ziniao-floating-panel');
+        this.panel = document.getElementById('amazon-helper-floating-panel');
 
         // 绑定事件
-        document.getElementById('ziniao-min-btn').addEventListener('click', this.toggleMinimize);
-        document.getElementById('ziniao-pause-btn').addEventListener('click', this.togglePause);
-        document.getElementById('ziniao-stop-btn').addEventListener('click', this.stopExecution);
-        document.getElementById('ziniao-skip-btn').addEventListener('click', this.skipProduct);
-        document.getElementById('ziniao-settings-toggle').addEventListener('click', this.toggleSettings);
+        document.getElementById('amazon-helper-min-btn').addEventListener('click', this.toggleMinimize);
+        document.getElementById('amazon-helper-pause-btn').addEventListener('click', this.togglePause);
+        document.getElementById('amazon-helper-stop-btn').addEventListener('click', this.stopExecution);
+        document.getElementById('amazon-helper-skip-btn').addEventListener('click', this.skipProduct);
+        document.getElementById('amazon-helper-settings-toggle').addEventListener('click', this.toggleSettings);
 
         // 绑定设置变更
         document.getElementById('fp-autoNavigate').addEventListener('change', (e) => this.updateSetting('autoNavigate', e.target.checked));
         document.getElementById('fp-autoNavigate').addEventListener('change', (e) => this.updateSetting('autoNavigate', e.target.checked));
         document.getElementById('fp-humanLike').addEventListener('change', (e) => this.updateSetting('humanLike', e.target.checked));
         document.getElementById('fp-devMode').addEventListener('change', (e) => this.toggleDevMode(e.target.checked));
-        document.getElementById('ziniao-clear-logs').addEventListener('click', () => this.clearLogs());
-        document.getElementById('ziniao-dump-structure').addEventListener('click', () => {
+        document.getElementById('amazon-helper-clear-logs').addEventListener('click', () => this.clearLogs());
+        document.getElementById('amazon-helper-dump-structure').addEventListener('click', () => {
             if (window.dumpFormStructure) {
                 console.log('正在分析页面结构...');
                 window.dumpFormStructure();
@@ -382,19 +382,19 @@ class FloatingPanel {
     updateUI() {
         if (!this.panel) return;
 
-        document.getElementById('ziniao-task-name').textContent =
+        document.getElementById('amazon-helper-task-name').textContent =
             this.state.currentProduct ? (this.state.currentProduct.item_name || this.state.currentProduct.title || this.state.currentProduct.asin) : '无任务';
-        document.getElementById('ziniao-status-text').textContent = this.state.statusText;
-        document.getElementById('ziniao-progress').style.width = `${this.calculateProgress()}%`;
-        document.getElementById('ziniao-counter').textContent = this.state.currentIndex + 1;
-        document.getElementById('ziniao-counter').textContent = this.state.currentIndex + 1;
-        document.getElementById('ziniao-pause-btn').textContent = this.state.isPaused ? '继续' : '暂停';
+        document.getElementById('amazon-helper-status-text').textContent = this.state.statusText;
+        document.getElementById('amazon-helper-progress').style.width = `${this.calculateProgress()}%`;
+        document.getElementById('amazon-helper-counter').textContent = this.state.currentIndex + 1;
+        document.getElementById('amazon-helper-counter').textContent = this.state.currentIndex + 1;
+        document.getElementById('amazon-helper-pause-btn').textContent = this.state.isPaused ? '继续' : '暂停';
 
         // 更新页面类型显示
         if (window.pageDetector) {
             const pageType = window.pageDetector.detectCurrentPage();
             const pageName = window.pageDetector.getPageDisplayName(pageType);
-            const el = document.getElementById('ziniao-page-type');
+            const el = document.getElementById('amazon-helper-page-type');
             if (el) el.textContent = pageName;
         }
     }
@@ -480,7 +480,7 @@ class FloatingPanel {
 
     toggleSettings(e) {
         if (e) e.stopPropagation();
-        const panel = document.getElementById('ziniao-settings-panel');
+        const panel = document.getElementById('amazon-helper-settings-panel');
         panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     }
 
@@ -736,18 +736,165 @@ class FloatingPanel {
                 await this.switchToNextPage(); // 递归尝试下一个
             }
         } else {
-            // 所有页面都填完了
-            this.updateStatus('当前商品所有页面已完成！');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 所有页面都填完了，保存草稿并开始下一个商品
+            await this.completeCurrentProductAndStartNext();
+        }
+    }
 
-            // 再次检查暂停状态
-            if (this.state.isPaused) {
-                console.log('[工作流] 已暂停，不切换商品');
-                return;
+    /**
+     * 完成当前商品（保存草稿）并开始下一个商品
+     */
+    async completeCurrentProductAndStartNext() {
+        // 再次检查暂停状态
+        if (this.state.isPaused) {
+            console.log('[工作流] 已暂停，不保存草稿');
+            return;
+        }
+
+        // 1. 保存为草稿
+        this.updateStatus('正在保存草稿...');
+        const saveSuccess = await this.saveAsDraft();
+
+        if (saveSuccess) {
+            console.log('✅ 草稿保存成功');
+            this.updateStatus('草稿已保存！准备下一个商品...');
+        } else {
+            console.warn('⚠️ 草稿保存可能失败，但继续处理');
+            this.updateStatus('草稿保存状态未知，继续下一个商品...');
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 再次检查暂停状态
+        if (this.state.isPaused) {
+            console.log('[工作流] 已暂停，不切换商品');
+            return;
+        }
+
+        // 2. 检查是否还有下一个商品
+        if (this.state.currentIndex + 1 >= this.state.totalProducts) {
+            this.updateStatus('🎉 所有商品已处理完毕！');
+            this.state.isRunning = false;
+            await chrome.storage.local.set({ workflowStatus: 'idle' });
+            return;
+        }
+
+        // 3. 切换到下一个商品
+        this.state.currentIndex++;
+        this.state.currentProduct = this.state.products[this.state.currentIndex];
+        this.state.filledPages.clear(); // 重置已填写页面
+        this.state.availablePages = []; // 重置可用页面
+
+        await chrome.storage.local.set({ currentIndex: this.state.currentIndex });
+        this.updateUI();
+
+        // 4. 导航回搜索页面
+        this.updateStatus('正在返回搜索页面...');
+        await this.navigateToSearchPage();
+
+        // 等待页面加载
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 5. 继续工作流（会自动搜索新的ASIN并开始填写）
+        this.resumeWorkflow();
+    }
+
+    /**
+     * 保存为草稿
+     */
+    async saveAsDraft() {
+        try {
+            // 查找保存草稿按钮
+            let saveButton = null;
+            const buttons = document.querySelectorAll('button, kat-button');
+
+            for (const button of buttons) {
+                const text = (button.textContent || button.getAttribute('label') || '').trim();
+                if (text.includes('保存为草稿') ||
+                    text.includes('Save as Draft') ||
+                    text.includes('下書き保存') ||
+                    text.includes('下書きとして保存')) {
+                    saveButton = button;
+                    break;
+                }
             }
 
-            // 切换到下一个商品
-            this.skipProduct();
+            if (!saveButton) {
+                // 备用：通过UID查找（根据文档记录）
+                const uids = ['46_279', '47_53', '48_268', '53_152']; // 各页面的保存按钮UID
+                for (const uid of uids) {
+                    saveButton = document.querySelector(`[uid="${uid}"]`);
+                    if (saveButton) break;
+                }
+            }
+
+            if (saveButton) {
+                console.log('[保存草稿] 找到保存按钮，点击中...');
+                saveButton.click();
+
+                // 等待保存完成
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // 检查是否有成功提示
+                const successIndicators = document.querySelectorAll('[class*="success"], [class*="toast"], [role="alert"]');
+                if (successIndicators.length > 0) {
+                    console.log('[保存草稿] 检测到成功提示');
+                }
+
+                return true;
+            } else {
+                console.warn('[保存草稿] 未找到保存按钮');
+                return false;
+            }
+        } catch (error) {
+            console.error('[保存草稿] 出错:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 导航回搜索页面
+     */
+    async navigateToSearchPage() {
+        try {
+            // 方法1：查找"返回商品信息草稿"或类似按钮
+            let backButton = null;
+            const buttons = document.querySelectorAll('button, kat-button, a');
+
+            for (const button of buttons) {
+                const text = (button.textContent || button.getAttribute('label') || '').trim();
+                if (text.includes('返回商品信息草稿') ||
+                    text.includes('返回') ||
+                    text.includes('Back') ||
+                    text.includes('戻る')) {
+                    backButton = button;
+                    break;
+                }
+            }
+
+            if (backButton) {
+                console.log('[导航] 点击返回按钮');
+                backButton.click();
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            // 方法2：直接导航到添加商品页面
+            const currentUrl = window.location.href;
+            if (currentUrl.includes('sellercentral-japan.amazon.com')) {
+                // 日本亚马逊
+                const searchUrl = currentUrl.split('/abis/')[0] + '/product-search/search?ref=xx_addlisting_dnav_xx';
+                console.log('[导航] 跳转到搜索页面:', searchUrl);
+                window.location.href = searchUrl;
+            } else if (currentUrl.includes('sellercentral.amazon.com')) {
+                // 美国亚马逊
+                const searchUrl = currentUrl.split('/abis/')[0] + '/product-search';
+                window.location.href = searchUrl;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('[导航] 返回搜索页面出错:', error);
+            return false;
         }
     }
 
@@ -783,7 +930,7 @@ class FloatingPanel {
 
     initDrag() {
         // 简单的拖拽实现
-        const header = this.panel.querySelector('.ziniao-panel-header');
+        const header = this.panel.querySelector('.amazon-helper-panel-header');
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
@@ -794,14 +941,14 @@ class FloatingPanel {
         });
     }
     toggleDevMode(enabled) {
-        const consoleEl = document.getElementById('ziniao-dev-console');
+        const consoleEl = document.getElementById('amazon-helper-dev-console');
         if (consoleEl) {
             consoleEl.style.display = enabled ? 'block' : 'none';
         }
     }
 
     clearLogs() {
-        const body = document.getElementById('ziniao-console-body');
+        const body = document.getElementById('amazon-helper-console-body');
         if (body) body.innerHTML = '';
     }
 
@@ -822,7 +969,7 @@ class FloatingPanel {
     }
 
     appendLog(type, args) {
-        const body = document.getElementById('ziniao-console-body');
+        const body = document.getElementById('amazon-helper-console-body');
         if (!body) return;
 
         const msg = args.map(arg => {
@@ -838,10 +985,10 @@ class FloatingPanel {
 
         const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
         const entry = document.createElement('div');
-        entry.className = 'ziniao-log-entry';
+        entry.className = 'amazon-helper-log-entry';
         entry.innerHTML = `
-            <span class="ziniao-log-time">[${time}]</span>
-            <span class="ziniao-log-${type}">${msg}</span>
+            <span class="amazon-helper-log-time">[${time}]</span>
+            <span class="amazon-helper-log-${type}">${msg}</span>
         `;
 
         body.appendChild(entry);

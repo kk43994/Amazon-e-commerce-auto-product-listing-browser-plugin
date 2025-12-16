@@ -277,9 +277,25 @@ function calculateConfidence(text, keyword) {
     return (matches / lowerKeyword.length) * 30;
 }
 
-// 高亮显示元素
-function highlightElement(selector, duration = 2000) {
-    const element = document.querySelector(selector);
+// 高亮显示元素 (支持传入HTMLElement或CSS选择器字符串)
+function highlightElement(selectorOrElement, duration = 2000) {
+    let element;
+
+    // 判断传入的是元素还是选择器字符串
+    if (typeof selectorOrElement === 'string') {
+        try {
+            element = document.querySelector(selectorOrElement);
+        } catch (e) {
+            console.warn('[高亮] 无效的选择器:', selectorOrElement);
+            return;
+        }
+    } else if (selectorOrElement instanceof HTMLElement || selectorOrElement instanceof Element) {
+        element = selectorOrElement;
+    } else {
+        console.warn('[高亮] 无效的参数类型:', typeof selectorOrElement);
+        return;
+    }
+
     if (!element) return;
 
     const original = {

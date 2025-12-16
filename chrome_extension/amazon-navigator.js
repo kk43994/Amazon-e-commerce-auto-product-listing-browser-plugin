@@ -382,51 +382,136 @@ class AmazonNavigator {
         }
 
         // 尝试在结果中找到更具体的点击目标
-        // 根据用户反馈，必须点击商品标题
         let clickTarget = result;
 
-        // 1. 查找标题链接 (最优先)
-        // 策略：查找文本长度最长的span或div，通常是标题
-        const allElements = result.querySelectorAll('*');
-        let maxLen = 0;
-        let titleElement = null;
+        // 0. 最优先：查找商品图片 (这个更可靠，直接在DOM中)
+        console.log('查找点击目标...');
 
-        for (const el of allElements) {
-            // 排除不可见元素
-            if (el.offsetParent === null) continue;
-
-            const text = el.textContent.trim();
-            // 标题通常比较长，且不包含ASIN等元数据标签
-            if (text.length > maxLen && text.length > 20 &&
-                !text.includes('ASIN:') && !text.includes('EAN:')) {
-                maxLen = text.length;
-                titleElement = el;
+        // 先尝试查找商品图片
+        const productImage = this.findInShadowDOMWithPredicate(el => {
+            if (el.tagName === 'IMG') {
+                const testId = el.getAttribute('data-testid') || '';
+                if (testId.includes('search-results-row-image') || testId.includes('product-image')) {
+                    return true;
+                }
+                // 也检查父元素的data-testid
+                const parent = el.parentElement;
+                if (parent) {
+                    const parentTestId = parent.getAttribute('data-testid') || '';
+                    if (parentTestId.includes('search-results-row-image')) {
+                        return true;
+                    }
+                }
             }
-        }
+            return false;
+        });
 
-        if (titleElement) {
-            console.log('✓ 找到疑似商品标题元素 (长度: ' + maxLen + ')');
-            clickTarget = titleElement;
+        if (productImage) {
+            console.log('✓ 找到商品图片作为点击目标');
+            clickTarget = productImage;
         } else {
-            // 2. 查找箭头图标 (Chevron) - 备选
-            const chevron = result.querySelector('i[class*="chevron"], kat-icon[name*="chevron"], kat-icon[name*="arrow"], .chevron');
+            // 1. 尝试查找箭头图标 (chevron-right)
+            const chevron = this.findInShadowDOMWithPredicate(el => {
+                if (el.tagName === 'KAT-ICON') {
+                    const name = el.getAttribute('name') || '';
+                    if (name.includes('chevron-right') || name.includes('chevron')) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
             if (chevron) {
-                console.log('✓ 找到箭头图标作为点击目标');
+                console.log('✓ 找到箭头图标 (chevron-right) 作为点击目标');
                 clickTarget = chevron;
+            }
+            // 1. 尝试在Shadow DOM中查找箭头
+            const listItem = result.closest('kat-list-item') || result;
+            if (listItem && listItem.shadowRoot) {
+                const shadowChevron = listItem.shadowRoot.querySelector('kat-icon[name="chevron-right"], kat-icon[name*="chevron"]');
+                if (shadowChevron) {
+                    console.log('✓ 在Shadow DOM中找到箭头图标');
+                    clickTarget = shadowChevron;
+                }
+            }
+
+            // 2. 如果没找到箭头，使用kat-list-item本身
+            if (clickTarget === result && listItem && listItem.tagName === 'KAT-LIST-ITEM') {
+                console.log('✓ 使用kat-list-item作为点击目标');
+                clickTarget = listItem;
+            } else if (clickTarget === result) {
+                // 3. 最后尝试标题
+                const allElements = result.querySelectorAll('*');
+                let maxLen = 0;
+                for (const el of allElements) {
+                    if (el.offsetParent === null) continue;
+                    const text = el.textContent.trim();
+                    if (text.length > maxLen && text.length > 20 &&
+                        !text.includes('ASIN:') && !text.includes('EAN:')) {
+                        maxLen = text.length;
+                        clickTarget = el;
+                    }
+                }
+                if (clickTarget !== result) {
+                    console.log('✓ 使用商品标题作为点击目标');
+                }
             }
         }
 
         // 点击结果
-        console.log('准备点击目标:', clickTarget);
+        console.log('准备点击目标:', clickTarget.tagName);
 
         // 确保元素在视图中
         clickTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
         await this.sleep(500);
 
+        // 尝试多种点击方式
         this.clickElement(clickTarget);
-        console.log('✓ 已点击搜索结果');
+        console.log('✓ 已点击搜索结果 (方式1: clickElement)');
 
-        await this.sleep(2000); // 点击后多等待一会儿
+        // 等待页面变化
+        await this.sleep(1500);
+
+        // 检查是否需要再次点击（有时候第一次点击只是选中）
+        // 通过检测"复制商品信息"按钮或页面标题变化来判断
+        let pageChanged = false;
+        for (let i = 0; i < 5; i++) {
+            // 检查是否出现了"商品信息"标题或复制按钮
+            const pageTitle = document.querySelector('h1, h2, [class*="title"], [class*="header"]');
+            const titleText = pageTitle ? pageTitle.textContent : '';
+
+            if (titleText.includes('商品信息') || titleText.includes('Product Information')) {
+                console.log('✓ 检测到商品详情页面');
+                pageChanged = true;
+                break;
+            }
+
+            // 尝试查找复制按钮
+            const copyBtn = await this.findCopyProductButton();
+            if (copyBtn) {
+                console.log('✓ 检测到复制按钮出现');
+                pageChanged = true;
+                break;
+            }
+
+            // 等待并重试
+            if (i < 4) {
+                console.log(`等待页面变化... (${i + 1}/5)`);
+                await this.sleep(1000);
+
+                // 如果第2次还没变化，尝试再次点击
+                if (i === 1) {
+                    console.log('尝试再次点击...');
+                    clickTarget.click();
+                    await this.sleep(500);
+                }
+            }
+        }
+
+        if (!pageChanged) {
+            console.warn('⚠️ 页面可能未成功跳转，继续执行...');
+        }
+
         return true;
     }
 
@@ -535,26 +620,42 @@ class AmazonNavigator {
         // 策略1: 直接查找普通输入框（根据Chrome MCP实测，输入框不在Shadow DOM中）
         console.log('查找搜索输入框...');
 
+        // 多语言placeholder列表
+        const placeholderPatterns = [
+            '输入商品名称、商品描述或关键词', // 中文
+            '商品名、ブランド、または識別コード', // 日文
+            '商品名、商品説明、キーワード', // 日文变体
+            'Enter product name', // 英文
+            'Product name', // 英文
+        ];
+
         // 查找具有特定placeholder的输入框
-        let input = document.querySelector('input[placeholder="输入商品名称、商品描述或关键词"]');
-        if (input) {
-            const rect = input.getBoundingClientRect();
-            // 确保输入框可见且不是顶部搜索框（顶部搜索框Y坐标通常小于100）
-            if (rect.width > 200 && rect.height > 20 && rect.top > 100) {
-                console.log('✓ 找到搜索输入框（主搜索区域）');
-                return input;
+        for (const pattern of placeholderPatterns) {
+            let input = document.querySelector(`input[placeholder*="${pattern}"]`);
+            if (input) {
+                const rect = input.getBoundingClientRect();
+                if (rect.width > 200 && rect.height > 20 && rect.top > 100) {
+                    console.log(`✓ 找到搜索输入框（placeholder: ${pattern}）`);
+                    return input;
+                }
             }
         }
 
         // 策略2: 如果没找到，尝试查找所有文本输入框
         const allInputs = document.querySelectorAll('input[type="text"], input:not([type])');
         for (const inp of allInputs) {
-            const placeholder = inp.getAttribute('placeholder');
+            const placeholder = (inp.getAttribute('placeholder') || '').toLowerCase();
             if (placeholder && (
                 placeholder.includes('商品名称') ||
                 placeholder.includes('商品描述') ||
                 placeholder.includes('关键词') ||
-                placeholder.includes('ASIN')
+                placeholder.includes('商品名') ||
+                placeholder.includes('キーワード') ||
+                placeholder.includes('product') ||
+                placeholder.includes('asin') ||
+                placeholder.includes('ean') ||
+                placeholder.includes('jan') ||
+                placeholder.includes('検索')
             )) {
                 const rect = inp.getBoundingClientRect();
                 if (rect.width > 200 && rect.height > 20 && rect.top > 100) {
@@ -1208,94 +1309,95 @@ class AmazonNavigator {
      * 查找"复制商品信息"按钮
      */
     async findCopyProductButton() {
-        // 方法0: 针对新版UI (kat-button) - 最高优先级
-        // 根据用户截图，按钮是 kat-button[data-testid="copy-listing"]
-        console.log('正在查找"复制商品信息"按钮 (kat-button)...');
+        // 多语言按钮文本列表
+        const buttonTexts = [
+            '复制商品信息',           // 中文
+            'Copy product information', // 英文
+            'Copy',                    // 英文简写
+            'Use this product',        // 英文变体
+            '商品情報をコピー',         // 日文
+            '商品を複製',              // 日文变体
+            'この商品を使用',          // 日文 - Use this product
+            '出品する',               // 日文 - List this
+            '選択',                   // 日文 - Select
+            'コピー',                 // 日文 - Copy
+        ];
 
-        // 尝试通过 data-testid 查找
-        const katBtnTestId = await this.findInShadowDOMSelector('kat-button[data-testid="copy-listing"]');
-        if (katBtnTestId) {
-            console.log('✓ 找到"复制商品信息"按钮 (data-testid="copy-listing")');
-            return katBtnTestId;
-        }
+        console.log('正在查找"复制商品信息"按钮...');
 
-        // 尝试通过 label 查找
-        const katBtnLabel = await this.findInShadowDOMSelector('kat-button[label="复制商品信息"]');
-        if (katBtnLabel) {
-            console.log('✓ 找到"复制商品信息"按钮 (label="复制商品信息")');
-            return katBtnLabel;
-        }
+        // 重试机制 - 按钮可能需要时间加载
+        for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) {
+                console.log(`重试查找按钮 (尝试 ${attempt + 1}/3)...`);
+                await this.sleep(1000);
+            }
 
-        // 尝试在Shadow DOM中查找包含特定文本的按钮
-        // 使用更激进的遍历策略，因为querySelector有时候在深层Shadow DOM中会失效
-        console.log('使用深度遍历查找复制按钮...');
-        const shadowBtn = await this.findInShadowDOMWithPredicate(el => {
-            // 检查标签名
-            const tagName = el.tagName.toLowerCase();
-            if (tagName !== 'button' && tagName !== 'kat-button') return false;
+            // 方法0: 通过 data-testid 查找 (最可靠)
+            const katBtnTestId = await this.findInShadowDOMSelector('kat-button[data-testid="copy-listing"]');
+            if (katBtnTestId) {
+                console.log('✓ 找到"复制商品信息"按钮 (data-testid="copy-listing")');
+                return katBtnTestId;
+            }
 
-            // 检查属性
-            const testId = el.getAttribute('data-testid') || '';
-            const label = el.getAttribute('label') || '';
-
-            if (testId === 'copy-listing') return true;
-            if (label === '复制商品信息' || label === 'Copy product information') return true;
-
-            // 检查文本内容 (包括Shadow DOM内的文本)
-            const text = (el.textContent || '') + (el.innerHTML || '');
-            if (text.includes('复制商品信息') || text.includes('Copy product information')) return true;
-
-            // 检查内部的 button 元素 (针对 kat-button)
-            if (tagName === 'kat-button' && el.shadowRoot) {
-                const innerBtn = el.shadowRoot.querySelector('button');
-                if (innerBtn) {
-                    const innerText = innerBtn.textContent || '';
-                    if (innerText.includes('复制商品信息') || innerText.includes('Copy')) return true;
+            // 方法1: 通过 label 属性查找
+            for (const text of buttonTexts) {
+                const katBtnLabel = await this.findInShadowDOMSelector(`kat-button[label="${text}"]`);
+                if (katBtnLabel) {
+                    console.log(`✓ 找到按钮 (label="${text}")`);
+                    return katBtnLabel;
                 }
             }
 
-            return false;
-        });
+            // 方法2: 深度遍历Shadow DOM查找
+            const shadowBtn = this.findInShadowDOMWithPredicate(el => {
+                const tagName = el.tagName.toLowerCase();
+                if (tagName !== 'button' && tagName !== 'kat-button') return false;
 
-        if (shadowBtn) {
-            console.log('✓ 在Shadow DOM中找到"复制商品信息"按钮 (深度匹配)');
-            return shadowBtn;
-        }
+                const testId = el.getAttribute('data-testid') || '';
+                const label = el.getAttribute('label') || '';
+                const text = (el.textContent || '') + (label || '');
 
-        // 方法1: 通过按钮文本查找 (Light DOM)
-        const buttons = document.querySelectorAll('button, kat-button');
+                // 检查data-testid
+                if (testId === 'copy-listing') return true;
 
-        for (const btn of buttons) {
-            const text = btn.textContent.trim();
-            if (text.includes('复制商品信息') ||
-                text.includes('Copy') ||
-                text.includes('複製') ||
-                text.includes('商品情報をコピー') ||
-                text.includes('商品を複製')) {
-
-                const rect = btn.getBoundingClientRect();
-                // 确保按钮可见
-                if (rect.width > 0 && rect.height > 0 &&
-                    rect.top >= 0 && rect.top < window.innerHeight) {
-                    console.log('✓ 找到"复制商品信息"按钮');
-                    return btn;
+                // 检查文本内容
+                for (const btnText of buttonTexts) {
+                    if (label.includes(btnText) || text.includes(btnText)) return true;
                 }
+
+                // 检查Shadow DOM内部
+                if (tagName === 'kat-button' && el.shadowRoot) {
+                    const innerBtn = el.shadowRoot.querySelector('button');
+                    if (innerBtn) {
+                        const innerText = innerBtn.textContent || '';
+                        for (const btnText of buttonTexts) {
+                            if (innerText.includes(btnText)) return true;
+                        }
+                    }
+                }
+
+                return false;
+            });
+
+            if (shadowBtn) {
+                console.log('✓ 在Shadow DOM中找到按钮');
+                return shadowBtn;
             }
-        }
 
-        // 方法2: 通过图标或样式查找
-        const allButtons = document.querySelectorAll('button, [role="button"], a[class*="button"]');
-        for (const btn of allButtons) {
-            // 检查是否包含复制相关的图标类
-            if (btn.className && (
-                btn.className.includes('copy') ||
-                btn.className.includes('duplicate') ||
-                btn.className.includes('clone'))) {
+            // 方法3: 在Light DOM中查找
+            const buttons = document.querySelectorAll('button, kat-button, [role="button"]');
+            for (const btn of buttons) {
+                const text = btn.textContent.trim();
+                const label = btn.getAttribute('label') || '';
 
-                const rect = btn.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0) {
-                    console.log('✓ 找到复制按钮（通过类名）');
-                    return btn;
+                for (const btnText of buttonTexts) {
+                    if (text.includes(btnText) || label.includes(btnText)) {
+                        const rect = btn.getBoundingClientRect();
+                        if (rect.width > 0 && rect.height > 0) {
+                            console.log(`✓ 找到按钮: "${btnText}"`);
+                            return btn;
+                        }
+                    }
                 }
             }
         }
@@ -1368,25 +1470,62 @@ class AmazonNavigator {
      * 点击元素（支持各种场景）
      */
     clickElement(element) {
-        if (!element) return false;
+        if (!element) {
+            console.log('❌ clickElement: 元素为空');
+            return false;
+        }
+
+        console.log(`[clickElement] 目标: <${element.tagName}> name=${element.getAttribute?.('name') || 'N/A'}`);
 
         try {
-            // 方法1: 直接点击
+            // 获取元素位置信息
+            const rect = element.getBoundingClientRect();
+            console.log(`[clickElement] 位置: top=${rect.top}, left=${rect.left}, width=${rect.width}, height=${rect.height}`);
+
+            // 方法1: 直接调用 click()
+            console.log('[clickElement] 尝试方式1: element.click()');
             element.click();
-            return true;
-        } catch (e1) {
-            try {
-                // 方法2: 触发click事件
-                element.dispatchEvent(new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                }));
-                return true;
-            } catch (e2) {
-                console.error('点击失败:', e2);
-                return false;
+
+            // 方法2: 触发 MouseEvent
+            console.log('[clickElement] 尝试方式2: MouseEvent');
+            element.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                composed: true  // 允许穿透 Shadow DOM
+            }));
+
+            // 方法3: 触发 PointerEvent (更现代的方式)
+            console.log('[clickElement] 尝试方式3: PointerEvent');
+            element.dispatchEvent(new PointerEvent('pointerdown', {
+                bubbles: true, cancelable: true, view: window, composed: true
+            }));
+            element.dispatchEvent(new PointerEvent('pointerup', {
+                bubbles: true, cancelable: true, view: window, composed: true
+            }));
+
+            // 方法4: 如果是 kat-icon，尝试点击其父元素或祖先元素
+            if (element.tagName === 'KAT-ICON') {
+                console.log('[clickElement] 检测到kat-icon，尝试点击父元素');
+                let parent = element.parentElement;
+                for (let i = 0; i < 5 && parent; i++) {
+                    if (parent.tagName.startsWith('KAT-') || parent.getAttribute('role') === 'button') {
+                        console.log(`[clickElement] 点击父元素: <${parent.tagName}>`);
+                        parent.click();
+                        parent.dispatchEvent(new MouseEvent('click', {
+                            bubbles: true, cancelable: true, view: window, composed: true
+                        }));
+                        break;
+                    }
+                    parent = parent.parentElement;
+                }
             }
+
+            console.log('[clickElement] ✓ 点击操作完成');
+            return true;
+        } catch (e) {
+            console.error('[clickElement] 点击失败:', e);
+            return false;
         }
     }
 
@@ -1491,22 +1630,46 @@ class AmazonNavigator {
         let lastCount = 0;
         let stableCount = 0;
 
+        // 使用深度遍历来计数搜索结果
+        const countResults = () => {
+            let count = 0;
+
+            // 方法1: 使用深度遍历查找包含ASIN/EAN文本的元素
+            this.findInShadowDOMWithPredicate(el => {
+                const text = el.textContent || '';
+                const testId = el.getAttribute?.('data-testid') || '';
+
+                // 检查是否是搜索结果相关元素
+                if (testId.includes('search-results-row') ||
+                    testId.includes('product-image') ||
+                    (el.tagName === 'IMG' && testId.includes('search'))) {
+                    count++;
+                }
+
+                // 检查是否包含ASIN/EAN文本
+                if (text.includes('ASIN:') || text.includes('EAN:') || text.includes('JAN:')) {
+                    count++;
+                }
+
+                return false; // 继续遍历
+            });
+
+            // 方法2: 检查是否有"X条结果"文本
+            const allText = document.body?.textContent || '';
+            if (allText.includes('条结果') || allText.includes('results')) {
+                count = Math.max(count, 1);
+            }
+
+            return count;
+        };
+
         return new Promise((resolve, reject) => {
             const checkInterval = setInterval(() => {
-                // 检查搜索结果数量
-                // 查找包含ASIN或EAN文本的元素数量作为指标
-                const results = document.querySelectorAll('kat-list-item, tr[class*="result"], div[data-asin]');
-                const currentCount = results.length;
-
-                // 同时也检查是否有"搜索结果"标题
                 try {
-                    const allHeaders = document.querySelectorAll('h1, h2, h3, div');
-                    const hasHeader = Array.from(allHeaders).some(
-                        el => el.textContent && (el.textContent.includes('搜索结果') || el.textContent.includes('Search Results'))
-                    );
+                    const currentCount = countResults();
+                    console.log(`检测到搜索结果数量: ${currentCount}`);
 
-                    if (currentCount > 0 || hasHeader) {
-                        // ... (rest of logic)
+                    if (currentCount > 0) {
                         if (currentCount === lastCount) {
                             stableCount++;
                         } else {
@@ -1514,8 +1677,8 @@ class AmazonNavigator {
                         }
                         lastCount = currentCount;
 
-                        // 如果连续3次检查（1.5秒）数量稳定，或者已经找到了结果且时间超过3秒
-                        if (stableCount >= 3 || (currentCount > 0 && Date.now() - startTime > 3000)) {
+                        // 如果连续3次检查（1.5秒）数量稳定，或者已经找到了结果且时间超过2秒
+                        if (stableCount >= 3 || (currentCount > 0 && Date.now() - startTime > 2000)) {
                             clearInterval(checkInterval);
                             console.log(`✓ 搜索结果已稳定 (数量: ${currentCount})`);
                             resolve(true);
@@ -1526,7 +1689,7 @@ class AmazonNavigator {
                     if (Date.now() - startTime > timeout) {
                         clearInterval(checkInterval);
                         console.warn('⚠️ 等待搜索结果稳定超时，继续尝试查找');
-                        resolve(true); // 超时也继续，尝试查找
+                        resolve(true);
                     }
                 } catch (e) {
                     console.error('waitForSearchResultsStable check error:', e);
