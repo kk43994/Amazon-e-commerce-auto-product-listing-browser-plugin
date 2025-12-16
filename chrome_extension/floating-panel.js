@@ -681,7 +681,7 @@ class FloatingPanel {
         // 策略: 查找包含特定文本的 kat-tab 或 链接
         const tabTexts = {
             'productDetails': ['产品详情', 'Product Details', '商品詳細'],
-            'variations': ['变体', 'Variations', 'バリエーション'],
+            'variations': ['变体', 'Variations', 'Variation', 'バリエーション', '多属性'],
             'offer': ['报价', 'Offer', '出品情報'],
             'safetyCompliance': ['安全与合规', 'Safety & Compliance', '安全とコンプライアンス'],
             'images': ['图片', 'Images', '画像']
@@ -789,14 +789,24 @@ class FloatingPanel {
         this.updateUI();
 
         // 4. 导航回搜索页面
-        this.updateStatus('正在返回搜索页面...');
-        await this.navigateToSearchPage();
+        if (saveSuccess) {
+            this.updateStatus('正在返回搜索页面...');
+            await this.navigateToSearchPage(false); // 成功：当前页跳转
+        } else {
+            console.warn('草稿保存失败，为防止卡死，在新标签页开始下一个商品...');
+            this.updateStatus('保存失败，正在新标签页开始下一个商品...');
+            await this.navigateToSearchPage(true); // 失败：新标签页跳转
+        }
 
-        // 等待页面加载
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // 5. 继续工作流（会自动搜索新的ASIN并开始填写）
-        this.resumeWorkflow();
+        // 等待页面加载 (如果是当前页跳转)
+        if (saveSuccess) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            // 5. 继续工作流
+            this.resumeWorkflow();
+        } else {
+            // 如果是新标签页，当前页面可以停止工作流，或者保留给用户检查
+            // 新标签页会自动启动插件并读取 storage 中的 currentIndex 继续运行
+        }
     }
 
     /**
@@ -854,40 +864,54 @@ class FloatingPanel {
 
     /**
      * 导航回搜索页面
+     * @param {boolean} openInNewTab 是否在新标签页打开
      */
-    async navigateToSearchPage() {
+    async navigateToSearchPage(openInNewTab = false) {
         try {
-            // 方法1：查找"返回商品信息草稿"或类似按钮
-            let backButton = null;
-            const buttons = document.querySelectorAll('button, kat-button, a');
+            // 方法1：查找"返回商品信息草稿"或类似按钮 (仅在不强制新标签页时尝试)
+            if (!openInNewTab) {
+                let backButton = null;
+                const buttons = document.querySelectorAll('button, kat-button, a');
 
-            for (const button of buttons) {
-                const text = (button.textContent || button.getAttribute('label') || '').trim();
-                if (text.includes('返回商品信息草稿') ||
-                    text.includes('返回') ||
-                    text.includes('Back') ||
-                    text.includes('戻る')) {
-                    backButton = button;
-                    break;
+                for (const button of buttons) {
+                    const text = (button.textContent || button.getAttribute('label') || '').trim();
+                    if (text.includes('返回商品信息草稿') ||
+                        text.includes('返回') ||
+                        text.includes('Back') ||
+                        text.includes('戻る')) {
+                        backButton = button;
+                        break;
+                    }
+                }
+
+                if (backButton) {
+                    console.log('[导航] 点击返回按钮');
+                    backButton.click();
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    return true;
                 }
             }
 
-            if (backButton) {
-                console.log('[导航] 点击返回按钮');
-                backButton.click();
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-
-            // 方法2：直接导航到添加商品页面
+            // 方法2：构建URL导航
             const currentUrl = window.location.href;
+            let searchUrl = '';
+
             if (currentUrl.includes('sellercentral-japan.amazon.com')) {
                 // 日本亚马逊
-                const searchUrl = currentUrl.split('/abis/')[0] + '/product-search/search?ref=xx_addlisting_dnav_xx';
-                console.log('[导航] 跳转到搜索页面:', searchUrl);
-                window.location.href = searchUrl;
+                searchUrl = currentUrl.split('/abis/')[0] + '/product-search/search?ref=xx_addlisting_dnav_xx';
             } else if (currentUrl.includes('sellercentral.amazon.com')) {
                 // 美国亚马逊
-                const searchUrl = currentUrl.split('/abis/')[0] + '/product-search';
+                searchUrl = currentUrl.split('/abis/')[0] + '/product-search';
+            } else {
+                // Fallback (根据当前域名)
+                searchUrl = window.location.origin + '/product-search/search';
+            }
+
+            console.log(`[导航] 跳转到搜索页面: ${searchUrl} (新标签页: ${openInNewTab})`);
+
+            if (openInNewTab) {
+                window.open(searchUrl, '_blank');
+            } else {
                 window.location.href = searchUrl;
             }
 

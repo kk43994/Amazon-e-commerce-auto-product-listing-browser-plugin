@@ -203,6 +203,96 @@ const AMAZON_FIELDS = {
     }
 };
 
+/**
+ * 注入样式
+ */
+function injectStyles() {
+    const styleId = 'amazon-plugin-styles';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            .amazon-plugin-filled {
+                border: 2px solid #2196F3 !important;
+                background-color: #f0f9ff !important;
+                position: relative;
+                transition: all 0.3s ease;
+            }
+            .amazon-plugin-filled::after {
+                content: '⚡ 填写: ' attr(data-filled-value);
+                position: absolute;
+                top: -20px;
+                left: 0;
+                background: #2196F3;
+                color: white;
+                font-size: 10px;
+                padding: 2px 6px;
+                border-radius: 4px;
+                white-space: nowrap;
+                z-index: 1000;
+                pointer-events: none;
+                opacity: 0.9;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            kat-input.amazon-plugin-filled, 
+            kat-textarea.amazon-plugin-filled,
+            kat-select.amazon-plugin-filled,
+            kat-date-picker.amazon-plugin-filled {
+                border: 2px solid #2196F3 !important;
+                box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+            }
+        `;
+        document.head.appendChild(style);
+        console.log('[样式注入] 插件样式已注入');
+    }
+}
+
+/**
+ * 标记元素为已填写
+ */
+function markAsFilled(element, value) {
+    if (!element) return;
+
+    // 如果是 Wrapper (比如 kat-input 内部的 input)，尝试标记父级自定义元素
+    const parent = element.closest('kat-input, kat-textarea, kat-select, kat-date-picker');
+    const target = parent || element;
+
+    target.classList.add('amazon-plugin-filled');
+
+    // 截断过长显示文案
+    let displayValue = String(value);
+    if (displayValue.length > 10) displayValue = displayValue.substring(0, 10) + '...';
+    target.setAttribute('data-filled-value', displayValue);
+}
+
+/**
+ * 检查元素是否已填写正确
+ */
+function isAlreadyFilled(element, value) {
+    if (!element) return false;
+
+    // 1. 检查是否有标记
+    const parent = element.closest('kat-input, kat-textarea, kat-select, kat-date-picker');
+    const target = parent || element;
+
+    if (target.classList.contains('amazon-plugin-filled') && target.getAttribute('data-filled-value')) {
+        return true;
+    }
+
+    // 2. 检查值是否一致 (弱类型比较)
+    let currentValue = element.value;
+
+    // 特殊处理 Checkbox/Radio
+    if (element.type === 'checkbox' || element.type === 'radio') {
+        return element.checked === true; // 对于 check/radio，value 只是 option value，重点是 checked
+    }
+
+    return currentValue == value;
+}
+
+// 初始化注入样式
+injectStyles();
+
 // Excel字段到Amazon字段的映射
 const EXCEL_TO_AMAZON_MAPPING = {
     // 产品详情 - 基础字段（旧模板）
@@ -1662,7 +1752,7 @@ function findElementByLabels(labels, targetType = 'textbox', index = 0) {
                 // 情况B: Input在Label内部
                 let innerSelector = 'input:not([type="hidden"]), textarea, select, kat-input, kat-textarea, kat-select, kat-combobox, kat-autocomplete';
                 if (targetType === 'textbox' || targetType === 'textarea') {
-                    innerSelector = 'input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]), textarea, select, kat-input, kat-textarea, kat-select, kat-combobox, kat-autocomplete';
+                    innerSelector = 'input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]):not([type="file"]), textarea, select, kat-input, kat-textarea, kat-select, kat-combobox, kat-autocomplete';
                 }
                 const innerInput = currentEl.querySelector(innerSelector);
                 if (innerInput) {
@@ -1684,7 +1774,7 @@ function findElementByLabels(labels, targetType = 'textbox', index = 0) {
 
                     // 如果目标是文本框，排除 radio 和 checkbox
                     if (targetType === 'textbox' || targetType === 'textarea') {
-                        selector = 'input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]), textarea, select, kat-input, kat-textarea, kat-select, kat-combobox, kat-autocomplete';
+                        selector = 'input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]):not([type="file"]), textarea, select, kat-input, kat-textarea, kat-select, kat-combobox, kat-autocomplete';
                     }
 
                     const inputs = parent.querySelectorAll(selector);
@@ -1824,15 +1914,19 @@ async function fillTextbox(element, value, humanLike = true) {
             }
         }
 
-        console.log(`[填写] 目标元素: ${tagName}, Value: ${value}`);
+        if (nativeInput.type === 'file') {
+            console.warn(`[填写] 跳过: 目标是文件上传框，fillTextbox 不支持 (应使用 fillFile)`);
+            return;
+        }
+
+        console.log(`[填写] 目标元素: ${tagName}, Type: ${nativeInput.type}, Value: ${value}`);
 
         // 0. 幂等性检查 (Idempotency Check)
         // 如果当前值已经等于目标值，直接跳过，防止重复填写
-        if (typeof value === 'string' && nativeInput.value === value) {
-            console.log(`[填写] 值相同，跳过 (Current: ${nativeInput.value}, Target: ${value})`);
-            // 即便值相同，虽然不重新输入，但为了保险起见，高亮一下表示已确认
-            highlightElement(element);
-            await sleep(500);
+        if (isAlreadyFilled(nativeInput, value)) {
+            console.log(`[填写] 值相同/已填写，跳过 (Target: ${value})`);
+            markAsFilled(element, value); // 确保加上视觉标记
+            await sleep(200);
             return;
         }
 
@@ -1877,6 +1971,8 @@ async function fillTextbox(element, value, humanLike = true) {
             element.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
 
+        markAsFilled(element, value);
+
     } catch (e) {
         console.error('[填写] fillTextbox 发生错误:', e);
         throw e;
@@ -1892,6 +1988,12 @@ async function fillDropdown(element, value) {
     const mappedValue = DROPDOWN_MAPPING[value] || value;
 
     // 0. 幂等性检查 (Idempotency Check)
+    if (isAlreadyFilled(element, value)) {
+        console.log(`[下拉] 值相同/已填写，跳过 (Target: ${value})`);
+        markAsFilled(element, value);
+        return;
+    }
+
     // 检查当前选中的值是否已经包含目标关键词
     let currentValue = element.value || element.textContent || '';
     // 如果是 kat-dropdown 或其他组件，尝试从 shadow dom 或属性获取 label
@@ -1950,6 +2052,7 @@ async function fillDropdown(element, value) {
             element.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
         }
     }
+    markAsFilled(element, value);
 }
 
 // 下拉框值映射 (English -> Japanese/Chinese)
@@ -2064,6 +2167,12 @@ async function selectRadioOption(element, value) {
     }
 
     // 3. 执行点击 (多重策略)
+    // 0. 幂等性检查
+    if (isAlreadyFilled(target, value)) {
+        console.log(`[单选] 已选择，跳过: ${value}`);
+        markAsFilled(target, value);
+        return;
+    }
     try {
         console.log('[单选] 执行点击:', target);
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2085,6 +2194,7 @@ async function selectRadioOption(element, value) {
     } catch (e) {
         console.error('[单选] 点击失败:', e);
     }
+    markAsFilled(target, value);
 }
 
 /**
